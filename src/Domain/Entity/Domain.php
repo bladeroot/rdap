@@ -18,6 +18,8 @@ use hiqdev\rdap\core\Domain\ValueObject\SecureDNS;
 
 final class Domain extends Common
 {
+    use TopMostEntityTrait;
+
     /**
      * @var DomainName
      */
@@ -227,5 +229,4 @@ final class Domain extends Common
 
         return $this;
     }
-
 }

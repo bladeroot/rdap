@@ -101,12 +101,4 @@ class CommonTest extends TestCase
         $common->addStatus($status2);
         $this->assertSame([$status1, $status2], $common->getStatus());
     }
-
-    public function testRdapConformance(): void
-    {
-        $common = $this->getMockForAbstractClass(Common::class, [ObjectClassName::ENTITY()]);
-        $newConf = 'rdap_level_1';
-        $common->addRdapConformance($newConf);
-        $this->assertContains($newConf, $common->getRdapConformance());
-    }
 }

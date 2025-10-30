@@ -52,9 +52,7 @@ final class SymfonySerializer implements SerializerInterface
             null,
             [
                 ObjectNormalizer::SKIP_NULL_VALUES => true,
-                ObjectNormalizer::IGNORED_ATTRIBUTES => [
-                    'rdapConformance',
-                ],
+                ObjectNormalizer::IGNORED_ATTRIBUTES => [],
             ]
         );
         $serializer = new Serializer([

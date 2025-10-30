@@ -145,4 +145,14 @@ class DomainTest extends TestCase
         $this->assertSame('змішанакапіталізація.укр', (string) $domain->getLdhName()->toUnicode());
         $this->assertSame('xn--80aaaaa1bevlem1a3byds8jrehdd.xn--j1amh', (string) $domain->getLdhName());
     }
+
+    public function testRdapConformance(): void
+    {
+        $domain = new Domain(DomainName::of('example.com'));
+        $this->assertSame([
+            'rdap_level_0',
+            'icann_rdap_technical_implementation_guide_1',
+            'icann_rdap_response_profile_1',
+        ], $domain->getRdapConformance());
+    }
 }
