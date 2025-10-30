@@ -91,7 +91,7 @@ final class Entity extends Common
     /**
      * @return VCard[]|null
      */
-    public function getVcardArray(): ?array
+    public function getVcardArray()
     {
         return $this->vcardArray;
     }
@@ -104,7 +104,7 @@ final class Entity extends Common
         if (empty($this->vcardArray)) {
             $this->vcardArray = [];
         }
-        $this->vcardArray[] = $vcard;
+        $this->vcardArray = $vcard;
     }
 
     /**

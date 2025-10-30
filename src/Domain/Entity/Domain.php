@@ -123,7 +123,11 @@ final class Domain extends Common
      */
     public function getEntities(): ?array
     {
-        return $this->entities;
+        if (empty($this->entities['entities'])) {
+            return $this->entities ?? [];
+        }
+
+        return $this->entities['entities'];
     }
 
     /**
@@ -207,6 +211,7 @@ final class Domain extends Common
         if ($this->entities === null) {
             $this->entities = [];
         }
+
         $this->entities[] = $entity;
 
         return $this;
@@ -222,4 +227,5 @@ final class Domain extends Common
 
         return $this;
     }
+
 }

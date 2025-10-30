@@ -86,7 +86,7 @@ final class Link
      */
     public function getType(): ?string
     {
-        return $this->type;
+        return $this->type ?? 'text/html';
     }
 
     /**
@@ -148,7 +148,7 @@ final class Link
      */
     public function getValue(): ?string
     {
-        return $this->value;
+        return $this->value ?? $this->getHref();
     }
 
     /**
