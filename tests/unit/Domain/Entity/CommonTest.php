@@ -39,8 +39,8 @@ class CommonTest extends TestCase
 
     public function testNoticesAndRemarks(): void
     {
-        $notice1 = new Notice('title1', 'type1', ['description1']);
-        $notice2 = new Notice('title2', 'type2', ['description2']);
+        $notice1 = new Notice('title1', ['description1']);
+        $notice2 = new Notice('title2', ['description2']);
         $common = $this->getMockForAbstractClass(Common::class, [ObjectClassName::ENTITY()]);
         $common->addNotice($notice1);
         $common->addNotice($notice2);

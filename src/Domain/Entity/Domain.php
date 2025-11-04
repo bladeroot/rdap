@@ -65,6 +65,8 @@ final class Domain extends Common
         parent::__construct(ObjectClassName::DOMAIN());
 
         $this->ldhName = $ldhName->toLDH();
+
+        $this->secureDNS = new SecureDNS();
     }
 
     /**

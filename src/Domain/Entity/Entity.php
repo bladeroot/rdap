@@ -104,6 +104,7 @@ final class Entity extends Common
         if (empty($this->vcardArray)) {
             $this->vcardArray = [];
         }
+
         $this->vcardArray = $vcard;
     }
 

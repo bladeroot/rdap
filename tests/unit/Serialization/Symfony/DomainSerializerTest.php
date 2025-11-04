@@ -177,9 +177,18 @@ class DomainSerializerTest extends TestCase
 
     private function addRemarks(Domain $domain): void
     {
-        $domain->addRemark(new Notice('tittle1', 'type1', ['description1']));
-        $domain->addRemark(new Notice('tittle2', 'type2', ['description2']));
-        $domain->addRemark(new Notice('tittle3', 'type3', ['description3']));
+        $domain->addRemark(
+            (new Notice('tittle1', ['description1']))
+            ->setType('type1')
+        );
+        $domain->addRemark(
+            (new Notice('tittle2', ['description2']))
+            ->setType('type2')
+        );
+        $domain->addRemark(
+            (new Notice('tittle3', ['description3']))
+            ->setType('type3')
+        );
     }
 
     private function addEntities(Domain $domain): void

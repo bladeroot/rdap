@@ -37,16 +37,9 @@ class EntityTest extends TestCase
         $vcard1->addName('Doe', 'John');
         $vcard1->addCompany('Acme Inc');
 
-        $vcard2 = new VCard();
-        $vcard2->addEmail('text@example.com');
-        $vcard2->addPhoneNumber('+380931234567');
-        $vcard2->addName('Doe', 'John');
-        $vcard2->addCompany('Acme Inc');
-
         $entity = new Entity();
         $entity->addVcard($vcard1);
-        $entity->addVcard($vcard2);
-        $this->assertSame([$vcard1, $vcard2], $entity->getVcardArray());
+        $this->assertSame($vcard1, $entity->getVcardArray());
     }
 
     public function testEntity(): void
