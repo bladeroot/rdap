@@ -151,7 +151,9 @@ class DomainTest extends TestCase
         $domain = new Domain(DomainName::of('example.com'));
         $this->assertSame([
             'rdap_level_0',
+            'icann_rdap_technical_implementation_guide_0',
             'icann_rdap_technical_implementation_guide_1',
+            'icann_rdap_response_profile_0',
             'icann_rdap_response_profile_1',
         ], $domain->getRdapConformance());
     }
