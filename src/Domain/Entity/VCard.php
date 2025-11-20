@@ -90,9 +90,7 @@ final class VCard implements \JsonSerializable
         string $name = '',
         array $properties = []
     ): VCard {
-        if (empty($properties) || empty($properties['cc'])) {
-            $properties['cc'] = $country;
-        }
+        $properties['cc'] = strtoupper($properties['cc'] ?? $country);
 
         $this->vCard['adr'] = [
             'adr',
