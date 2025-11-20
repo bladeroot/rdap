@@ -94,10 +94,10 @@ final class VCard implements \JsonSerializable
             $properties['cc'] = $country;
         }
 
-        $this->vCard['addr'] = [
+        $this->vCard['adr'] = [
             'adr',
             $properties,
-            $this->availableProperies['adr'],
+            $this->availableProperties['adr'],
             [
                 $name,
                 $ext,
