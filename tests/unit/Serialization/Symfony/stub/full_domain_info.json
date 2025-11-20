@@ -62,8 +62,7 @@
         "events": [
           {
             "eventAction": "deletion",
-            "eventDate": "2019-08-01T11:12:13+00:00",
-            "links": []
+            "eventDate": "2019-08-01T11:12:13+00:00"
           }
         ],
         "links": [
@@ -84,8 +83,7 @@
         "events": [
           {
             "eventAction": "deletion",
-            "eventDate": "2019-08-01T11:12:13+00:00",
-            "links": []
+            "eventDate": "2019-08-01T11:12:13+00:00"
           }
         ],
         "links": [
@@ -115,7 +113,9 @@
           ],
           [
             "email",
-            {},
+            {
+              "type": "INTERNET"
+            },
             "text",
             "text@example.com"
           ],
@@ -129,13 +129,15 @@
           ],
           [
             "fn",
-            {},
+            {
+            },
             "text",
             "John Doe"
           ],
           [
             "org",
-            {},
+            {
+            },
             "text",
             "Acme Inc"
           ]
@@ -151,8 +153,7 @@
           "asEventActor": [
             {
               "eventAction": "unlocked",
-              "eventDate": "2019-07-03T11:12:15+00:00",
-              "links": []
+              "eventDate": "2019-07-03T11:12:15+00:00"
             }
           ],
           "publicIds": [
@@ -173,8 +174,7 @@
       "asEventActor": [
         {
           "eventAction": "unlocked",
-          "eventDate": "2019-07-03T11:12:15+00:00",
-          "links": []
+          "eventDate": "2019-07-03T11:12:15+00:00"
         }
       ],
       "publicIds": [
@@ -240,18 +240,15 @@
   "events": [
     {
       "eventAction": "deletion",
-      "eventDate": "2019-08-01T00:00:01+00:00",
-      "links": []
+      "eventDate": "2019-08-01T00:00:01+00:00"
     },
     {
       "eventAction": "deletion",
-      "eventDate": "2019-08-01T00:00:01+00:00",
-      "links": []
+      "eventDate": "2019-08-01T00:00:01+00:00"
     },
     {
       "eventAction": "deletion",
-      "eventDate": "2019-08-01T00:00:01+00:00",
-      "links": []
+      "eventDate": "2019-08-01T00:00:01+00:00"
     }
   ],
   "port43": "ns1.example.com",

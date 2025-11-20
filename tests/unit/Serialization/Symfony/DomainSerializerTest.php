@@ -31,7 +31,6 @@ use hiqdev\rdap\core\Domain\ValueObject\PublicId;
 use hiqdev\rdap\core\Domain\ValueObject\SecureDNS;
 use hiqdev\rdap\core\Infrastructure\Serialization\Symfony\SymfonySerializer;
 use hiqdev\rdap\core\Domain\Entity\VCard;
-use JeroenDesloovere\VCard\VCard as JeroenDesloovereVCard;
 use JeroenDesloovere\VCard\VCardDateMock;
 use PHPUnit\Framework\TestCase;
 
@@ -204,13 +203,12 @@ class DomainSerializerTest extends TestCase
         $entity2 = clone $entity1;
         $entity1->addEntity($entity2);
 
-        $vcard = new VCard([
-            ['version', new \stdClass(), 'text', '4.0'],
-            ['email', new \stdClass(), 'text', 'text@example.com'],
-            ['tel', ['type' => 'voice'], 'text', '+380931234567'],
-            ['fn', new \stdClass(), 'text', 'John Doe'],
-            ['org', new \stdClass(), 'text', 'Acme Inc'],
-        ]);
+        $vcard = (new VCard())
+            ->setEmail('text@example.com', ['type' => 'INTERNET'])
+            ->setTel('+380931234567')
+            ->setFullName('John Doe')
+            ->setCompany('Acme Inc')
+            ;
 
         $entity1->addVcard($vcard);
         $domain->addEntity($entity1);
