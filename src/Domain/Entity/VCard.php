@@ -7,7 +7,7 @@ final class VCard implements \JsonSerializable
     const VERSION = '4.0';
 
     /** @var array */
-    private $availableProperies = [
+    private $availableProperties = [
         'version' => 'text',
         'fn' => 'text',
         'n' => 'text',
@@ -66,9 +66,9 @@ final class VCard implements \JsonSerializable
         return $this->setOrg($company, $properties);
     }
 
-    public function setUri(string $uri, array $properties = []): VCard
+    public function setUrl(string $url, array $properties = []): VCard
     {
-        return $this->setPropery('url', $uri, $properties);
+        return $this->setPropery('url', $url, $properties);
     }
 
     public function setTel(string $tel, array $properties = []): VCard
