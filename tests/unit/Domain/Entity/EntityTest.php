@@ -16,7 +16,8 @@ use hiqdev\rdap\core\Domain\Constant\Role;
 use hiqdev\rdap\core\Domain\Entity\Entity;
 use hiqdev\rdap\core\Domain\ValueObject\Event;
 use hiqdev\rdap\core\Domain\ValueObject\PublicId;
-use JeroenDesloovere\VCard\VCard;
+use JeroenDesloovere\VCard\VCard as JeroenDesloovereVCard;
+use hiqdev\rdap\core\Domain\Entity\VCard;
 use PHPUnit\Framework\TestCase;
 
 class EntityTest extends TestCase
@@ -31,15 +32,17 @@ class EntityTest extends TestCase
 
     public function testVCardArray(): void
     {
-        $vcard1 = new VCard();
-        $vcard1->addEmail('text@example.com');
-        $vcard1->addPhoneNumber('+380931234567');
-        $vcard1->addName('Doe', 'John');
-        $vcard1->addCompany('Acme Inc');
+        $vcard1 = new VCard([
+            ['version', new \stdClass(), 'text', '4.0'],
+            ['email', new \stdClass(), 'text', 'text@example.com'],
+            ['tel', new \stdClass(), 'text', '+380931234567'],
+            ['fn', new \stdClass(), 'text', 'John Doe'],
+            ['org', new \stdClass(), 'text', 'Acme Inc'],
+        ]);
 
         $entity = new Entity();
         $entity->addVcard($vcard1);
-        $this->assertSame($vcard1, $entity->getVcardArray());
+        $this->assertSame($vcard1, $entity->getVcardArray()[1]);
     }
 
     public function testEntity(): void

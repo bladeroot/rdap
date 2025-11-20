@@ -111,59 +111,33 @@
             "version",
             {},
             "text",
-            "3.0"
-          ],
-          [
-            "rev",
-            {},
-            "timestamp",
-            "2011-01-10T10:20:30Z"
+            "4.0"
           ],
           [
             "email",
-            {
-              "type": "INTERNET"
-            },
+            {},
             "text",
             "text@example.com"
           ],
           [
             "tel",
-            {},
+            {
+              "type": "voice"
+            },
             "text",
             "+380931234567"
           ],
           [
-            "n",
-            {
-              "charset": "utf-8"
-            },
-            "text",
-            [
-              "Doe",
-              "John",
-              "",
-              "",
-              ""
-            ]
-          ],
-          [
             "fn",
-            {
-              "charset": "utf-8"
-            },
+            {},
             "text",
             "John Doe"
           ],
           [
             "org",
-            {
-              "charset": "utf-8"
-            },
+            {},
             "text",
-            [
-              "Acme Inc"
-            ]
+            "Acme Inc"
           ]
         ]
       ],
