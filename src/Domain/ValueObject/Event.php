@@ -33,7 +33,7 @@ final class Event
     /**
      * @var Link[]
      */
-    private $links = [];
+    private $links;
 
     private function __construct(EventAction $eventAction, DateTimeImmutable $eventDate)
     {
@@ -88,8 +88,8 @@ final class Event
     /**
      * @return Link[]
      */
-    public function getLinks(): array
+    public function getLinks(): ?array
     {
-        return $this->links;
+        return $this->links ?? null;
     }
 }
