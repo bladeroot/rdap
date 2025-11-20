@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace hiqdev\rdap\core\Infrastructure\Serialization\Symfony\Normalizer;
 
-use JeroenDesloovere\VCard\VCard;
-use Sabre\VObject\Reader as VCardReader;
+use hiqdev\rdap\core\Domain\Entity\VCard;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -38,11 +37,6 @@ final class VcardNormalizer implements NormalizerInterface, CacheableSupportsMet
     /** {@inheritdoc} */
     public function normalize($object, $format = null, array $context = [])
     {
-        /** @var VCard $object */
-        $vCardString = $object->buildVCard();
-
-        $vCardObject = VCardReader::read($vCardString);
-
-        return $vCardObject->jsonSerialize();
+        return $object->jsonSerialize();
     }
 }

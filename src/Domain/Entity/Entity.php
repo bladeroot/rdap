@@ -99,13 +99,13 @@ final class Entity extends Common
     /**
      * @param VCard $vcard
      */
-    public function addVcard(VCard $vcard): void
+    public function addVcard( $vcard): void
     {
         if (empty($this->vcardArray)) {
-            $this->vcardArray = [];
+            $this->vcardArray = ['vcard'];
         }
 
-        $this->vcardArray = $vcard;
+        $this->vcardArray[] = $vcard;
     }
 
     /**

@@ -72,13 +72,19 @@ final class SymfonySerializer implements SerializerInterface
         $this->serializer = $serializer;
     }
 
-    public function serialize(object $entity, string $targetFormat = self::FORMAT_JSON)
-    {
-        return $this->serializer->serialize($entity, $targetFormat);
+    public function serialize(
+        object $entity,
+        string $targetFormat = self::FORMAT_JSON,
+        array $targetOptions = []
+    ): string {
+        return $this->serializer->serialize($entity, $targetFormat, $targetOptions);
     }
 
-    public function deserialize($input, ?string $type = null, string $sourceFormat = self::FORMAT_JSON)
-    {
+    public function deserialize(
+        $input,
+        ?string $type = null,
+        string $sourceFormat = self::FORMAT_JSON
+    ) {
         throw new Exception('Deserialization is not implemented yet');
         if ($type === null && is_object($input)) {
             $type = get_class($input);
