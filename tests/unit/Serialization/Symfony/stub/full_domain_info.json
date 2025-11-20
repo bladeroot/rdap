@@ -195,7 +195,54 @@
       "active"
     ]
   },
-  "links": [
+  "redacted": [
+     {
+         "name": {
+            "type": "Registry Registrant ID"
+        },
+        "prePath": "$.entities[0].handle",
+        "pathLang": "jsonpath",
+        "method": "removal",
+        "reason": {
+            "description": "Server policy"
+        }
+    },
+    {
+        "name": {
+            "type": "Registry Admin ID"
+        },
+        "prePath": "$.entities[1].handle",
+        "pathLang": "jsonpath",
+        "method": "removal",
+        "reason": {
+            "description": "Server policy"
+        }
+    },
+    {
+        "name": {
+            "type": "Registry Tech ID"
+        },
+        "prePath": "$.entities[2].handle",
+        "pathLang": "jsonpath",
+        "method": "removal",
+        "reason": {
+            "description": "Server policy"
+        }
+    },
+    {
+        "name": {
+            "type": "Registry Billing ID"
+        },
+        "prePath": "$.entities[3].handle",
+        "pathLang": "jsonpath",
+        "method": "removal",
+        "reason": {
+            "description": "Server policy"
+        }
+    }
+],
+
+"links": [
     {
       "href": "kek.ua",
       "type": "application\/json",
@@ -259,6 +306,7 @@
   "rdapConformance": [
       "rdap_level_0",
       "icann_rdap_technical_implementation_guide_1",
-      "icann_rdap_response_profile_1"
+      "icann_rdap_response_profile_1",
+      "redacted"
   ]
 }

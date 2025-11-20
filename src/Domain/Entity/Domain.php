@@ -60,6 +60,9 @@ final class Domain extends Common
      */
     private $network;
 
+    /** @var  array */
+    private $redacted;
+
     public function __construct(DomainName $ldhName)
     {
         parent::__construct(ObjectClassName::DOMAIN());
@@ -67,6 +70,8 @@ final class Domain extends Common
         $this->ldhName = $ldhName->toLDH();
 
         $this->secureDNS = new SecureDNS();
+
+        $this->setDefaultRedactedRules();
     }
 
     /**
@@ -230,5 +235,28 @@ final class Domain extends Common
         $this->network = $network;
 
         return $this;
+    }
+
+    public function getRedacted(): array
+    {
+        return $this->redacted;
+    }
+
+    private function setDefaultRedactedRules(): void
+    {
+        $this->redacted = [];
+        foreach (['registrant', 'admin', 'tech', 'billing'] as $k => $v) {
+            $this->redacted[] = [
+                'name' => [
+                    'type' => 'Registry ' . ucfirst($v) . ' ID',
+                ],
+                'prePath' => "$.entities[{$k}].handle",
+                'pathLang' => "jsonpath",
+                'method' => 'removal',
+                'reason' => [
+                    'description' => 'Server policy',
+                ]
+            ];
+        }
     }
 }
