@@ -70,8 +70,6 @@ final class Domain extends Common
         $this->ldhName = $ldhName->toLDH();
 
         $this->secureDNS = new SecureDNS();
-
-        $this->setDefaultRedactedRules();
     }
 
     /**
@@ -239,16 +237,20 @@ final class Domain extends Common
 
     public function getRedacted(): array
     {
+        if (empty($this->redacted)) {
+            $this->setDefaultRedactedRules();
+        }
+
         return $this->redacted;
     }
 
     private function setDefaultRedactedRules(): void
     {
         $this->redacted = [];
-        foreach (['registrant', 'admin', 'tech', 'billing'] as $k => $v) {
+        foreach (($this->getEntities() ?? []) as $k => $v) {
             $this->redacted[] = [
                 'name' => [
-                    'type' => 'Registry ' . ucfirst($v) . ' ID',
+                    'type' => 'Registry contact ID',
                 ],
                 'prePath' => "$.entities[{$k}].handle",
                 'pathLang' => "jsonpath",
