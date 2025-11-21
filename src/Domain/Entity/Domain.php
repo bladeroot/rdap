@@ -248,6 +248,9 @@ final class Domain extends Common
     {
         $this->redacted = [];
         foreach (($this->getEntities() ?? []) as $k => $v) {
+            if ($v->getHandle() !== null) {
+                continue;
+            }
             $this->redacted[] = [
                 'name' => [
                     'type' => 'Registry contact ID',
