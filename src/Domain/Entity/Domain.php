@@ -253,7 +253,7 @@ final class Domain extends Common
             }
             $this->redacted[] = [
                 'name' => [
-                    'type' => 'Registry contact ID',
+                    'type' => 'Registry registrant ID',
                 ],
                 'prePath' => "$.entities[{$k}].handle",
                 'pathLang' => "jsonpath",
