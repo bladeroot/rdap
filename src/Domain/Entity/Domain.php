@@ -286,7 +286,7 @@ final class Domain extends Common
                 $roleIndex = array_search($rType, $v->getRoles());
 
                 if ($type === 'technical') {
-                    $this->redacted[] = $this->redacted[] = $this->setRedactedEmptyValue(
+                    $this->redacted[] = $this->setRedactedEmptyValue(
                         "Tech name",
                         "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='fn')][3]"
                     );
@@ -297,32 +297,31 @@ final class Domain extends Common
 
                 $this->redacted[] = $this->setRedactedEmptyValue(
                     "Registrant name",
-                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}'].vcardArray[1][?(@[0]=='fn')][3]"
+                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='fn')][3]"
                 );
 
                 $this->redacted[] = $this->setRedactedEmptyValue(
                     "Registrant E-Mail",
-                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}'].vcardArray[1][?(@[0]=='email')][3]",
+                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='email')][3]",
                     true
                 );
 
                 $this->redacted[] = $this->setRedactedEmptyValue(
                     "Registrant phone",
-                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}'].vcardArray[1][?(@[0]=='tel')[3]",
-                    true
+                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='tel')][3]"
                 );
 
                 foreach ([ 2 => 'Street', 3 => 'City', 4 => 'State', 5 => 'Postal code'] as $n => $name) {
                     $this->redacted[] = $this->setRedactedEmptyValue(
                         "Registrant {$name}",
-                        "$.entities[?(@.roles[{$roleIndex}]=='{$type}'].vcardArray[1][?(@[0]=='adr')][3][{$n}]"
+                        "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='adr')][3][{$n}]"
                     );
                 }
             }
         }
     }
 
-    private function setRedactedEmptyValue(string $type, string $path, ?bool $repacted = false): array
+    private function setRedactedEmptyValue(string $type, string $path, ?bool $redacted = false): array
     {
         return [
             'name' => [
