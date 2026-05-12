@@ -195,54 +195,8 @@
       "active"
     ]
   },
-  "redacted": [
-     {
-         "name": {
-            "type": "Registry Registrant ID"
-        },
-        "prePath": "$.entities[0].handle",
-        "pathLang": "jsonpath",
-        "method": "removal",
-        "reason": {
-            "description": "Server policy"
-        }
-    },
-    {
-        "name": {
-            "type": "Registry Admin ID"
-        },
-        "prePath": "$.entities[1].handle",
-        "pathLang": "jsonpath",
-        "method": "removal",
-        "reason": {
-            "description": "Server policy"
-        }
-    },
-    {
-        "name": {
-            "type": "Registry Tech ID"
-        },
-        "prePath": "$.entities[2].handle",
-        "pathLang": "jsonpath",
-        "method": "removal",
-        "reason": {
-            "description": "Server policy"
-        }
-    },
-    {
-        "name": {
-            "type": "Registry Billing ID"
-        },
-        "prePath": "$.entities[3].handle",
-        "pathLang": "jsonpath",
-        "method": "removal",
-        "reason": {
-            "description": "Server policy"
-        }
-    }
-],
-
-"links": [
+  "redacted": [],
+  "links": [
     {
       "href": "kek.ua",
       "type": "application\/json",
