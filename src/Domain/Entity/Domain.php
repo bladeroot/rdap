@@ -307,7 +307,7 @@ final class Domain extends Common
                 );
 
                 $this->redacted[] = $this->setRedactedEmptyValue(
-                    "Registrant phone",
+                    "Registrant tel",
                     "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='tel')][3]"
                 );
 
