@@ -15,6 +15,7 @@ use hiqdev\rdap\core\Domain\ValueObject\DomainName;
 use hiqdev\rdap\core\Domain\ValueObject\DomainVariant\Variant;
 use hiqdev\rdap\core\Domain\ValueObject\PublicId;
 use hiqdev\rdap\core\Domain\ValueObject\SecureDNS;
+use hiqdev\rdap\core\Domain\Constant\Role;
 
 final class Domain extends Common
 {
@@ -237,11 +238,17 @@ final class Domain extends Common
 
     public function getRedacted(): array
     {
-        if (empty($this->redacted)) {
-            $this->setDefaultRedactedRules();
+        return $this->redacted ?? [];
+    }
+
+    public function setRedacted(?bool $wp = false): Domain
+    {
+        $this->setDefaultRedactedRules();
+        if ($wp === true) {
+            $this->setWPRedactedRules();
         }
 
-        return $this->redacted;
+        return $this;
     }
 
     private function setDefaultRedactedRules(): void
@@ -263,5 +270,70 @@ final class Domain extends Common
                 ]
             ];
         }
+    }
+
+    private function setWPRedactedRules(): void
+    {
+        $this->redacted = $this->redacted ?: [];
+
+        foreach (['registrant', 'technical'] as $type) {
+            $rType= Role::byName(strtoupper($type));
+            foreach (($this->getEntities() ?? []) as $k => $v) {
+                if (!in_array($rType, $v->getRoles(), true)) {
+                    continue ;
+                }
+
+                $roleIndex = array_search($rType, $v->getRoles());
+
+                if ($type === 'technical') {
+                    $this->redacted[] = $this->redacted[] = $this->setRedactedEmptyValue(
+                        "Tech name",
+                        "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='fn')][3]"
+                    );
+
+                    continue;
+                }
+
+
+                $this->redacted[] = $this->setRedactedEmptyValue(
+                    "Registrant name",
+                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}'].vcardArray[1][?(@[0]=='fn')][3]"
+                );
+
+                $this->redacted[] = $this->setRedactedEmptyValue(
+                    "Registrant E-Mail",
+                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}'].vcardArray[1][?(@[0]=='email')][3]",
+                    true
+                );
+
+                $this->redacted[] = $this->setRedactedEmptyValue(
+                    "Registrant phone",
+                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}'].vcardArray[1][?(@[0]=='tel')[3]",
+                    true
+                );
+
+                foreach ([ 2 => 'Street', 3 => 'City', 4 => 'State', 5 => 'Postal code'] as $n => $name) {
+                    $this->redacted[] = $this->setRedactedEmptyValue(
+                        "Registrant {$name}",
+                        "$.entities[?(@.roles[{$roleIndex}]=='{$type}'].vcardArray[1][?(@[0]=='adr')][3][{$n}]"
+                    );
+                }
+            }
+        }
+    }
+
+    private function setRedactedEmptyValue(string $type, string $path, ?bool $repacted = false): array
+    {
+        return [
+            'name' => [
+                'type' => "{$type}",
+            ],
+            "postPath" => "{$path}",
+            "pathLang" => "jsonpath",
+            "method" => $redacted ? 'redactedValue' : "emptyValue",
+            "reason" => [
+                "description" => "Server policy",
+            ],
+        ];
     }
 }
