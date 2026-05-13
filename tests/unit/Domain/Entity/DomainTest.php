@@ -188,14 +188,14 @@ class DomainTest extends TestCase
         }
 
         // Tech entity must have the same set of redacted fields as registrant
-        foreach (['Tech name', 'Tech E-Mail', 'Tech tel', 'Tech Street', 'Tech City', 'Tech Province', 'Tech Postal code'] as $field) {
+        foreach (['Technical name', 'Technical E-Mail', 'Technical tel', 'Technical Street', 'Technical City', 'Technical Province', 'Technical Postal code'] as $field) {
             $this->assertArrayHasKey($field, $byType, "Missing redacted entry: {$field}");
             $this->assertStringContainsString("@.roles[*]=='technical'", $byType[$field]['postPath']);
         }
 
         // Email uses replacementValue, all others emptyValue
-        $this->assertSame('replacementValue', $byType['Tech E-Mail']['method']);
-        $this->assertSame('emptyValue', $byType['Tech name']['method']);
+        $this->assertSame('replacementValue', $byType['Technical E-Mail']['method']);
+        $this->assertSame('emptyValue', $byType['Technical name']['method']);
 
         // Default handle path also uses wildcard
         $handleEntries = array_filter($redacted, static function (array $r) {
