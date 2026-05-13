@@ -291,7 +291,12 @@ final class Domain extends Common
                 }
                 $seen[$type] = true;
 
-                $label = ucfirst($type);
+                $label = [
+                    'registrant'     => 'Registrant',
+                    'administrative' => 'Admin',
+                    'technical'      => 'Tech',
+                    'billing'        => 'Billing',
+                ][$type] ?? ucfirst($type);
                 $base  = "$.entities[?(@.roles[*]=='{$type}')].vcardArray[1]";
 
                 $this->redacted[] = $this->setRedactedEmptyValue("{$label} Name",   "{$base}[?(@[0]=='fn')][3]");
