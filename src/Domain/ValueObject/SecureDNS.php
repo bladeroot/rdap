@@ -49,17 +49,14 @@ class SecureDNS
      * @param KeyData[] $keyData
      */
     public function __construct(
-        bool $delegationSigned = false,
         ?bool $zoneSigned = null,
+        bool $delegationSigned = false,
         ?int $maxSigLife = null,
         ?array $dsData = null,
         ?array $keyData = null
     ) {
-        $this->delegationSigned = $delegationSigned;
-        if ($delegationSigned === false) {
-            return ;
-        }
         $this->zoneSigned = $zoneSigned;
+        $this->delegationSigned = $delegationSigned;
         $this->maxSigLife = $maxSigLife;
         $this->dsData = $dsData;
         $this->keyData = $keyData;
