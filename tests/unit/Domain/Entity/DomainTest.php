@@ -200,13 +200,18 @@ class DomainTest extends TestCase
         $this->assertSame('replacementValue', $byType['Tech E-Mail']['method']);
         $this->assertSame('emptyValue', $byType['Tech Name']['method']);
 
-        // Default handle path also uses wildcard
+        // Handle entries: one per contact role, with role-specific name and concrete index
         $handleEntries = array_filter($redacted, static function (array $r) {
             return isset($r['prePath']);
         });
         foreach ($handleEntries as $entry) {
             $this->assertRegExp('/@\.roles\[\d+\]==/', $entry['prePath']);
         }
+        $this->assertArrayHasKey('Registry Tech ID', $byType);
+        $this->assertArrayHasKey('Registry Registrant ID', $byType);
+        $this->assertSame('removal', $byType['Registry Tech ID']['method']);
+        $this->assertRegExp("/@\.roles\[\d+\]=='technical'/", $byType['Registry Tech ID']['prePath']);
+        $this->assertRegExp("/@\.roles\[\d+\]=='registrant'/", $byType['Registry Registrant ID']['prePath']);
     }
 
     public function testRdapConformance(): void

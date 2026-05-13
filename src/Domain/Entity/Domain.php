@@ -254,22 +254,34 @@ final class Domain extends Common
     private function setDefaultRedactedRules(): void
     {
         $this->redacted = [];
+        $nonContactRoles = [Role::REGISTRAR(), Role::ABUSE()];
         foreach (($this->getEntities() ?? []) as $v) {
             if ($v->getHandle() !== null || empty($v->getRoles())) {
                 continue;
             }
-            $role = $v->getRoles()[0]->getValue();
-            $this->redacted[] = [
-                'name' => [
-                    'type' => 'Registry registrant ID',
-                ],
-                'prePath' => "$.entities[?(@.roles[0]=='{$role}')].handle",
-                'pathLang' => "jsonpath",
-                'method' => 'removal',
-                'reason' => [
-                    'description' => 'Server policy',
-                ]
-            ];
+            foreach ($v->getRoles() as $roleIndex => $role) {
+                if (in_array($role, $nonContactRoles, true)) {
+                    continue;
+                }
+                $type = $role->getValue();
+                $label = [
+                    'registrant'     => 'Registrant',
+                    'administrative' => 'Admin',
+                    'technical'      => 'Tech',
+                    'billing'        => 'Billing',
+                ][$type] ?? ucfirst($type);
+                $this->redacted[] = [
+                    'name' => [
+                        'type' => "Registry {$label} ID",
+                    ],
+                    'prePath' => "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].handle",
+                    'pathLang' => "jsonpath",
+                    'method' => 'removal',
+                    'reason' => [
+                        'description' => 'Server policy',
+                    ]
+                ];
+            }
         }
     }
 
