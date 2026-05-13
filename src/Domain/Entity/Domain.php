@@ -254,32 +254,24 @@ final class Domain extends Common
     private function setDefaultRedactedRules(): void
     {
         $this->redacted = [];
-        $nonContactRoles = [Role::REGISTRAR(), Role::ABUSE()];
+        $allowedRoles = ['registrant' => 'Registrant', 'technical' => 'Tech'];
+
         foreach (($this->getEntities() ?? []) as $v) {
             if ($v->getHandle() !== null || empty($v->getRoles())) {
                 continue;
             }
-            foreach ($v->getRoles() as $roleIndex => $role) {
-                if (in_array($role, $nonContactRoles, true)) {
+            foreach ($v->getRoles() as $role) {
+                $type = $role->getValue();
+                if (!isset($allowedRoles[$type])) {
                     continue;
                 }
-                $type = $role->getValue();
-                $label = [
-                    'registrant'     => 'Registrant',
-                    'administrative' => 'Admin',
-                    'technical'      => 'Tech',
-                    'billing'        => 'Billing',
-                ][$type] ?? ucfirst($type);
+                $label = $allowedRoles[$type];
                 $this->redacted[] = [
-                    'name' => [
-                        'type' => "Registry {$label} ID",
-                    ],
-                    'prePath' => "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].handle",
-                    'pathLang' => "jsonpath",
-                    'method' => 'removal',
-                    'reason' => [
-                        'description' => 'Server policy',
-                    ]
+                    'name'     => ['type' => "Registry {$label} ID"],
+                    'prePath'  => "$.entities[?(@.roles[0]=='{$type}')].handle",
+                    'pathLang' => 'jsonpath',
+                    'method'   => 'removal',
+                    'reason'   => ['description' => 'Server policy'],
                 ];
             }
         }
@@ -289,50 +281,61 @@ final class Domain extends Common
     {
         $this->redacted = $this->redacted ?: [];
 
-        $nonContactRoles = [Role::REGISTRAR(), Role::ABUSE()];
-        $seen = [];
+        $seenRegistrant = false;
+        $seenTechnical  = false;
 
         foreach (($this->getEntities() ?? []) as $v) {
-            foreach ($v->getRoles() as $roleIndex => $role) {
-                if (in_array($role, $nonContactRoles, true)) {
-                    continue;
-                }
+            foreach ($v->getRoles() as $role) {
                 $type = $role->getValue();
-                if (isset($seen[$type])) {
-                    continue;
+
+                if ($type === 'registrant' && !$seenRegistrant) {
+                    $seenRegistrant = true;
+                    $base = "$.entities[?(@.roles[0]=='registrant')].vcardArray[1]";
+
+                    $this->redacted[] = $this->redactedPostPath('Registrant Name',        "{$base}[?(@[0]=='fn')][3]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Organization', "{$base}[?(@[0]=='org')]");
+                    $this->redacted[] = $this->redactedPostPath('Registrant Street',       "{$base}[?(@[0]=='adr')][3][2]");
+                    $this->redacted[] = $this->redactedPostPath('Registrant City',         "{$base}[?(@[0]=='adr')][3][3]");
+                    $this->redacted[] = $this->redactedPostPath('Registrant Postal Code',  "{$base}[?(@[0]=='adr')][3][5]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Phone',        "{$base}[?(@[1].type=='voice')]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Phone Ext',    "{$base}[?(@[1].type=='voice')]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Fax',          "{$base}[?(@[1].type=='fax')]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Fax Ext',      "{$base}[?(@[1].type=='fax')]");
+                    $this->redacted[] = $this->redactedPostPath('Registrant Email',        "{$base}[?(@[0]=='email')][3]", 'replacementValue');
                 }
-                $seen[$type] = true;
 
-                $label = [
-                    'registrant'     => 'Registrant',
-                    'administrative' => 'Admin',
-                    'technical'      => 'Tech',
-                    'billing'        => 'Billing',
-                ][$type] ?? ucfirst($type);
-                $base  = "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1]";
+                if ($type === 'technical' && !$seenTechnical) {
+                    $seenTechnical = true;
+                    $base = "$.entities[?(@.roles[0]=='technical')].vcardArray[1]";
 
-                $this->redacted[] = $this->setRedactedEmptyValue("{$label} Name",   "{$base}[?(@[0]=='fn')][3]");
-                $this->redacted[] = $this->setRedactedEmptyValue("{$label} E-Mail", "{$base}[?(@[0]=='email')][3]", true);
-                $this->redacted[] = $this->setRedactedEmptyValue("{$label} Tel",    "{$base}[?(@[0]=='tel')][3]");
-                foreach ([2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal Code'] as $n => $name) {
-                    $this->redacted[] = $this->setRedactedEmptyValue("{$label} {$name}", "{$base}[?(@[0]=='adr')][3][{$n}]");
+                    $this->redacted[] = $this->redactedPostPath('Tech Name',      "{$base}[?(@[0]=='fn')][3]");
+                    $this->redacted[] = $this->redactedPrePath( 'Tech Phone',     "{$base}[?(@[1].type=='voice')]");
+                    $this->redacted[] = $this->redactedPrePath( 'Tech Phone Ext', "{$base}[?(@[1].type=='voice')]");
+                    $this->redacted[] = $this->redactedPostPath('Tech Email',     "{$base}[?(@[0]=='email')][3]", 'replacementValue');
                 }
             }
         }
     }
 
-    private function setRedactedEmptyValue(string $type, string $path, ?bool $redacted = false): array
+    private function redactedPostPath(string $name, string $path, string $method = 'emptyValue'): array
     {
         return [
-            'name' => [
-                'type' => "{$type}",
-            ],
-            "postPath" => "{$path}",
-            "pathLang" => "jsonpath",
-            "method" => $redacted ? 'replacementValue' : "emptyValue",
-            "reason" => [
-                "description" => "Server policy",
-            ],
+            'name'     => ['type' => $name],
+            'postPath' => $path,
+            'pathLang' => 'jsonpath',
+            'method'   => $method,
+            'reason'   => ['description' => 'Server policy'],
+        ];
+    }
+
+    private function redactedPrePath(string $name, string $path): array
+    {
+        return [
+            'name'     => ['type' => $name],
+            'prePath'  => $path,
+            'pathLang' => 'jsonpath',
+            'method'   => 'removal',
+            'reason'   => ['description' => 'Server policy'],
         ];
     }
 }

@@ -147,7 +147,7 @@ class DomainTest extends TestCase
         $this->assertSame('xn--80aaaaa1bevlem1a3byds8jrehdd.xn--j1amh', (string) $domain->getLdhName());
     }
 
-    public function testRedactedPathsUseWildcardRoleFilter(): void
+    public function testDefaultRedactedRulesOnlyRegistrantAndTech(): void
     {
         $entity = new Entity();
         $entity->addRole(Role::byName('REGISTRANT'));
@@ -155,33 +155,35 @@ class DomainTest extends TestCase
         $entity->addRole(Role::byName('TECHNICAL'));
         $entity->addRole(Role::byName('BILLING'));
 
+        $withHandle = new Entity();
+        $withHandle->setHandle('REG-001');
+        $withHandle->addRole(Role::byName('REGISTRANT'));
+
         $domain = new Domain(DomainName::of('example.com'));
         $domain->addEntity($entity);
-        $domain->setRedacted(true);
+        $domain->addEntity($withHandle);
+        $domain->setRedacted(false);
 
-        $postPaths = array_filter(array_column($domain->getRedacted(), 'postPath'));
-        foreach ($postPaths as $path) {
-            $this->assertRegExp('/@\.roles\[\d+\]==/', $path, 'JSONPath must use concrete role index');
-        }
+        $redacted = $domain->getRedacted();
+        $types = array_column(array_column($redacted, 'name'), 'type');
 
-        // All four contact roles must produce their own redacted entries
-        $types = array_column(array_column($domain->getRedacted(), 'name'), 'type');
-        foreach (['Registrant Name', 'Admin Name', 'Tech Name', 'Billing Name'] as $expected) {
-            $this->assertContains($expected, $types, "Missing redacted entry: {$expected}");
+        $this->assertContains('Registry Registrant ID', $types);
+        $this->assertContains('Registry Tech ID', $types);
+        $this->assertNotContains('Registry Admin ID', $types);
+        $this->assertNotContains('Registry Billing ID', $types);
+
+        foreach ($redacted as $entry) {
+            $this->assertRegExp('/\.roles\[0\]==/', $entry['prePath']);
         }
     }
 
-    public function testRedactedPathsCorrectWhenTechnicalOnlyEntity(): void
+    public function testWPRedactedRulesRegistrantCompleteSet(): void
     {
-        $techEntity = new Entity();
-        $techEntity->addRole(Role::byName('TECHNICAL'));
-
-        $registrantEntity = new Entity();
-        $registrantEntity->addRole(Role::byName('REGISTRANT'));
+        $entity = new Entity();
+        $entity->addRole(Role::byName('REGISTRANT'));
 
         $domain = new Domain(DomainName::of('example.com'));
-        $domain->addEntity($techEntity);
-        $domain->addEntity($registrantEntity);
+        $domain->addEntity($entity);
         $domain->setRedacted(true);
 
         $redacted = $domain->getRedacted();
@@ -190,28 +192,103 @@ class DomainTest extends TestCase
             $byType[$r['name']['type']] = $r;
         }
 
-        // Tech entity must have the same set of redacted fields as registrant
-        foreach (['Tech Name', 'Tech E-Mail', 'Tech Tel', 'Tech Street', 'Tech City', 'Tech Province', 'Tech Postal Code'] as $field) {
-            $this->assertArrayHasKey($field, $byType, "Missing redacted entry: {$field}");
-            $this->assertRegExp("/@\.roles\[\d+\]=='technical'/", $byType[$field]['postPath']);
+        $base = "$.entities[?(@.roles[0]=='registrant')].vcardArray[1]";
+
+        $this->assertArrayHasKey('Registrant Name', $byType);
+        $this->assertSame("{$base}[?(@[0]=='fn')][3]", $byType['Registrant Name']['postPath']);
+        $this->assertSame('emptyValue', $byType['Registrant Name']['method']);
+
+        $this->assertArrayHasKey('Registrant Organization', $byType);
+        $this->assertSame("{$base}[?(@[0]=='org')]", $byType['Registrant Organization']['prePath']);
+        $this->assertSame('removal', $byType['Registrant Organization']['method']);
+
+        $this->assertArrayHasKey('Registrant Street', $byType);
+        $this->assertSame("{$base}[?(@[0]=='adr')][3][2]", $byType['Registrant Street']['postPath']);
+        $this->assertSame('emptyValue', $byType['Registrant Street']['method']);
+
+        $this->assertArrayHasKey('Registrant City', $byType);
+        $this->assertSame("{$base}[?(@[0]=='adr')][3][3]", $byType['Registrant City']['postPath']);
+
+        $this->assertArrayHasKey('Registrant Postal Code', $byType);
+        $this->assertSame("{$base}[?(@[0]=='adr')][3][5]", $byType['Registrant Postal Code']['postPath']);
+
+        $this->assertArrayHasKey('Registrant Phone', $byType);
+        $this->assertSame("{$base}[?(@[1].type=='voice')]", $byType['Registrant Phone']['prePath']);
+        $this->assertSame('removal', $byType['Registrant Phone']['method']);
+
+        $this->assertArrayHasKey('Registrant Phone Ext', $byType);
+        $this->assertSame("{$base}[?(@[1].type=='voice')]", $byType['Registrant Phone Ext']['prePath']);
+
+        $this->assertArrayHasKey('Registrant Fax', $byType);
+        $this->assertSame("{$base}[?(@[1].type=='fax')]", $byType['Registrant Fax']['prePath']);
+
+        $this->assertArrayHasKey('Registrant Fax Ext', $byType);
+        $this->assertSame("{$base}[?(@[1].type=='fax')]", $byType['Registrant Fax Ext']['prePath']);
+
+        $this->assertArrayHasKey('Registrant Email', $byType);
+        $this->assertSame("{$base}[?(@[0]=='email')][3]", $byType['Registrant Email']['postPath']);
+        $this->assertSame('replacementValue', $byType['Registrant Email']['method']);
+
+        $this->assertArrayNotHasKey('Registrant Province', $byType);
+        $this->assertArrayNotHasKey('Registrant Tel', $byType);
+        $this->assertArrayNotHasKey('Registrant E-Mail', $byType);
+    }
+
+    public function testWPRedactedRulesTechLimitedSet(): void
+    {
+        $entity = new Entity();
+        $entity->addRole(Role::byName('TECHNICAL'));
+
+        $domain = new Domain(DomainName::of('example.com'));
+        $domain->addEntity($entity);
+        $domain->setRedacted(true);
+
+        $redacted = $domain->getRedacted();
+        $byType = [];
+        foreach ($redacted as $r) {
+            $byType[$r['name']['type']] = $r;
         }
 
-        // Email uses replacementValue, all others emptyValue
-        $this->assertSame('replacementValue', $byType['Tech E-Mail']['method']);
+        $base = "$.entities[?(@.roles[0]=='technical')].vcardArray[1]";
+
+        $this->assertArrayHasKey('Tech Name', $byType);
+        $this->assertSame("{$base}[?(@[0]=='fn')][3]", $byType['Tech Name']['postPath']);
         $this->assertSame('emptyValue', $byType['Tech Name']['method']);
 
-        // Handle entries: one per contact role, with role-specific name and concrete index
-        $handleEntries = array_filter($redacted, static function (array $r) {
-            return isset($r['prePath']);
-        });
-        foreach ($handleEntries as $entry) {
-            $this->assertRegExp('/@\.roles\[\d+\]==/', $entry['prePath']);
-        }
-        $this->assertArrayHasKey('Registry Tech ID', $byType);
-        $this->assertArrayHasKey('Registry Registrant ID', $byType);
-        $this->assertSame('removal', $byType['Registry Tech ID']['method']);
-        $this->assertRegExp("/@\.roles\[\d+\]=='technical'/", $byType['Registry Tech ID']['prePath']);
-        $this->assertRegExp("/@\.roles\[\d+\]=='registrant'/", $byType['Registry Registrant ID']['prePath']);
+        $this->assertArrayHasKey('Tech Phone', $byType);
+        $this->assertSame("{$base}[?(@[1].type=='voice')]", $byType['Tech Phone']['prePath']);
+        $this->assertSame('removal', $byType['Tech Phone']['method']);
+
+        $this->assertArrayHasKey('Tech Phone Ext', $byType);
+        $this->assertSame("{$base}[?(@[1].type=='voice')]", $byType['Tech Phone Ext']['prePath']);
+
+        $this->assertArrayHasKey('Tech Email', $byType);
+        $this->assertSame("{$base}[?(@[0]=='email')][3]", $byType['Tech Email']['postPath']);
+        $this->assertSame('replacementValue', $byType['Tech Email']['method']);
+
+        $this->assertArrayNotHasKey('Tech Street', $byType);
+        $this->assertArrayNotHasKey('Tech City', $byType);
+        $this->assertArrayNotHasKey('Tech Province', $byType);
+        $this->assertArrayNotHasKey('Tech Postal Code', $byType);
+        $this->assertArrayNotHasKey('Tech Tel', $byType);
+        $this->assertArrayNotHasKey('Tech E-Mail', $byType);
+    }
+
+    public function testAdminAndBillingProduceNoRedactedEntries(): void
+    {
+        $admin = new Entity();
+        $admin->addRole(Role::byName('ADMINISTRATIVE'));
+
+        $billing = new Entity();
+        $billing->addRole(Role::byName('BILLING'));
+
+        $domain = new Domain(DomainName::of('example.com'));
+        $domain->addEntity($admin);
+        $domain->addEntity($billing);
+        $domain->setRedacted(true);
+
+        $redacted = $domain->getRedacted();
+        $this->assertEmpty($redacted, 'Admin and Billing entities must not produce any redacted entries');
     }
 
     public function testRdapConformance(): void
