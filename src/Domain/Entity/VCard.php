@@ -24,7 +24,7 @@ final class VCard implements \JsonSerializable
     public function __construct(array $vCard = [])
     {
         $this->setVersion(self::VERSION);
-        array_merge($this->vCard, $vCard);
+        $this->vCard = array_merge($this->vCard, $vCard);
     }
 
     public function jsonSerialize()
