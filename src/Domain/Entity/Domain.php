@@ -294,10 +294,10 @@ final class Domain extends Common
                 $label = ucfirst($type);
                 $base  = "$.entities[?(@.roles[*]=='{$type}')].vcardArray[1]";
 
-                $this->redacted[] = $this->setRedactedEmptyValue("{$label} name",   "{$base}[?(@[0]=='fn')][3]");
+                $this->redacted[] = $this->setRedactedEmptyValue("{$label} Name",   "{$base}[?(@[0]=='fn')][3]");
                 $this->redacted[] = $this->setRedactedEmptyValue("{$label} E-Mail", "{$base}[?(@[0]=='email')][3]", true);
-                $this->redacted[] = $this->setRedactedEmptyValue("{$label} tel",    "{$base}[?(@[0]=='tel')][3]");
-                foreach ([2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal code'] as $n => $name) {
+                $this->redacted[] = $this->setRedactedEmptyValue("{$label} Tel",    "{$base}[?(@[0]=='tel')][3]");
+                foreach ([2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal Code'] as $n => $name) {
                     $this->redacted[] = $this->setRedactedEmptyValue("{$label} {$name}", "{$base}[?(@[0]=='adr')][3][{$n}]");
                 }
             }
