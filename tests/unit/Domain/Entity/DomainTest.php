@@ -159,12 +159,16 @@ class DomainTest extends TestCase
         $domain->addEntity($entity);
         $domain->setRedacted(true);
 
-        $paths = array_column(array_column($domain->getRedacted(), 'postPath'), null);
-        foreach (array_filter($paths) as $path) {
-            $this->assertStringNotContainsString('@.roles[0]', $path, 'JSONPath must not use hardcoded role index 0');
-            $this->assertStringNotContainsString('@.roles[1]', $path, 'JSONPath must not use hardcoded role index 1');
-            $this->assertStringNotContainsString('@.roles[2]', $path, 'JSONPath must not use hardcoded role index 2');
+        $postPaths = array_filter(array_column($domain->getRedacted(), 'postPath'));
+        foreach ($postPaths as $path) {
+            $this->assertStringNotContainsString('@.roles[0]', $path, 'JSONPath must not use hardcoded role index');
             $this->assertStringContainsString('@.roles[*]', $path, 'JSONPath must use wildcard [*] for role matching');
+        }
+
+        // All four contact roles must produce their own redacted entries
+        $types = array_column(array_column($domain->getRedacted(), 'name'), 'type');
+        foreach (['Registrant name', 'Administrative name', 'Technical name', 'Billing name'] as $expected) {
+            $this->assertContains($expected, $types, "Missing redacted entry: {$expected}");
         }
     }
 

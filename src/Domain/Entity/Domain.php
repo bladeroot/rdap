@@ -278,27 +278,28 @@ final class Domain extends Common
         $this->redacted = $this->redacted ?: [];
 
         $nonContactRoles = [Role::REGISTRAR(), Role::ABUSE()];
+        $seen = [];
 
         foreach (($this->getEntities() ?? []) as $v) {
-            $contactRole = null;
             foreach ($v->getRoles() as $role) {
-                if (!in_array($role, $nonContactRoles, true)) {
-                    $contactRole = $role->getValue();
-                    break;
+                if (in_array($role, $nonContactRoles, true)) {
+                    continue;
                 }
-            }
-            if ($contactRole === null) {
-                continue;
-            }
+                $type = $role->getValue();
+                if (isset($seen[$type])) {
+                    continue;
+                }
+                $seen[$type] = true;
 
-            $label = ucfirst($contactRole);
-            $base  = "$.entities[?(@.roles[*]=='{$contactRole}')].vcardArray[1]";
+                $label = ucfirst($type);
+                $base  = "$.entities[?(@.roles[*]=='{$type}')].vcardArray[1]";
 
-            $this->redacted[] = $this->setRedactedEmptyValue("{$label} name",   "{$base}[?(@[0]=='fn')][3]");
-            $this->redacted[] = $this->setRedactedEmptyValue("{$label} E-Mail", "{$base}[?(@[0]=='email')][3]", true);
-            $this->redacted[] = $this->setRedactedEmptyValue("{$label} tel",    "{$base}[?(@[0]=='tel')][3]");
-            foreach ([2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal code'] as $n => $name) {
-                $this->redacted[] = $this->setRedactedEmptyValue("{$label} {$name}", "{$base}[?(@[0]=='adr')][3][{$n}]");
+                $this->redacted[] = $this->setRedactedEmptyValue("{$label} name",   "{$base}[?(@[0]=='fn')][3]");
+                $this->redacted[] = $this->setRedactedEmptyValue("{$label} E-Mail", "{$base}[?(@[0]=='email')][3]", true);
+                $this->redacted[] = $this->setRedactedEmptyValue("{$label} tel",    "{$base}[?(@[0]=='tel')][3]");
+                foreach ([2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal code'] as $n => $name) {
+                    $this->redacted[] = $this->setRedactedEmptyValue("{$label} {$name}", "{$base}[?(@[0]=='adr')][3][{$n}]");
+                }
             }
         }
     }
