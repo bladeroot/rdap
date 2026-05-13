@@ -56,6 +56,29 @@ class DomainSerializerTest extends TestCase
         $this->assertJsonStringEqualsJsonFile($stubFilename, $json);
     }
 
+    /**
+     * @dataProvider eventDateProvider
+     */
+    public function testEventDateSerializedWithZSuffix(DateTimeImmutable $date, string $expectedDate): void
+    {
+        $domain = new Domain(DomainName::of('example.com'));
+        $domain->addEvent(Event::occurred(EventAction::REGISTRATION(), $date));
+
+        $json = json_decode($this->getSerializer()->serialize($domain), true);
+
+        $this->assertSame($expectedDate, $json['events'][0]['eventDate']);
+    }
+
+    public function eventDateProvider(): array
+    {
+        return [
+            'UTC offset +00:00 becomes Z'  => [new DateTimeImmutable('2011-03-14T08:40:47+00:00'), '2011-03-14T08:40:47Z'],
+            'explicit UTC timezone'         => [new DateTimeImmutable('2011-03-14T08:40:47', new \DateTimeZone('UTC')), '2011-03-14T08:40:47Z'],
+            'non-UTC normalised to UTC'     => [new DateTimeImmutable('2011-03-14T11:40:47+03:00'), '2011-03-14T08:40:47Z'],
+            'postgres-style string'         => [new DateTimeImmutable('2011-03-14 08:40:47', new \DateTimeZone('UTC')), '2011-03-14T08:40:47Z'],
+        ];
+    }
+
     public function testDeserialization(): void
     {
         $this->markTestIncomplete('Deserialization is not implemented yet.');
