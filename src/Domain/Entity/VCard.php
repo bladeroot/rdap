@@ -34,22 +34,22 @@ final class VCard implements \JsonSerializable
 
     public function setVersion(string $version): VCard
     {
-        return $this->setPropery('version', $version);
+        return $this->setProperty('version', $version);
     }
 
     public function setFullName(string $name, array $properties = []): VCard
     {
-        return $this->setPropery('fn', $name, $properties);
+        return $this->setProperty('fn', $name, $properties);
     }
 
     public function setName(string $name, array $properties = []): VCard
     {
-        return $this->setPropery('n', $name, $properties);
+        return $this->setProperty('n', $name, $properties);
     }
 
     public function setEmail(string $email, array $properties = []): VCard
     {
-        return $this->setPropery('email', $email, $properties);
+        return $this->setProperty('email', $email, $properties);
     }
 
     public function setOrg(?string $org = null, array $properties = []): VCard
@@ -58,7 +58,7 @@ final class VCard implements \JsonSerializable
             return $this;
         }
 
-        return $this->setPropery('org', $org, $properties);
+        return $this->setProperty('org', $org, $properties);
     }
 
     public function setCompany(?string $company = null, array $properties = []): VCard
@@ -68,7 +68,7 @@ final class VCard implements \JsonSerializable
 
     public function setUrl(string $url, array $properties = []): VCard
     {
-        return $this->setPropery('url', $url, $properties);
+        return $this->setProperty('url', $url, $properties);
     }
 
     public function setTel(string $tel, array $properties = []): VCard
@@ -77,7 +77,7 @@ final class VCard implements \JsonSerializable
             $properties['type'] = 'voice';
         }
 
-        return $this->setPropery('tel', $tel, $properties);
+        return $this->setProperty('tel', $tel, $properties);
     }
 
     public function setAddress(
@@ -117,7 +117,7 @@ final class VCard implements \JsonSerializable
         return $this->vCard;
     }
 
-    protected function setPropery(string $property, string $value, array $properties = [], string $type = 'text'): VCard
+    protected function setProperty(string $property, string $value, array $properties = [], string $type = 'text'): VCard
     {
         $this->vCard[$property] = [
             $property,
