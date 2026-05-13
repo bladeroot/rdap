@@ -119,9 +119,9 @@ final class Domain extends Common
     }
 
     /**
-     * @return SecureDNS|null
+     * @return SecureDNS
      */
-    public function getSecureDNS(): ?SecureDNS
+    public function getSecureDNS(): SecureDNS
     {
         return $this->secureDNS;
     }
