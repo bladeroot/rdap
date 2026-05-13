@@ -181,14 +181,29 @@ class DomainTest extends TestCase
         $domain->addEntity($registrantEntity);
         $domain->setRedacted(true);
 
-        $techPaths = array_filter(
-            $domain->getRedacted(),
-            static function (array $r) { return ($r['name']['type'] ?? '') === 'Tech name'; }
-        );
-        $this->assertCount(1, $techPaths, 'Must have exactly one Tech name redacted entry');
+        $redacted = $domain->getRedacted();
+        $byType = [];
+        foreach ($redacted as $r) {
+            $byType[$r['name']['type']] = $r;
+        }
 
-        $techPath = reset($techPaths)['postPath'];
-        $this->assertStringContainsString("@.roles[*]=='technical'", $techPath);
+        // Tech entity must have the same set of redacted fields as registrant
+        foreach (['Tech name', 'Tech E-Mail', 'Tech tel', 'Tech Street', 'Tech City', 'Tech Province', 'Tech Postal code'] as $field) {
+            $this->assertArrayHasKey($field, $byType, "Missing redacted entry: {$field}");
+            $this->assertStringContainsString("@.roles[*]=='technical'", $byType[$field]['postPath']);
+        }
+
+        // Email uses replacementValue, all others emptyValue
+        $this->assertSame('replacementValue', $byType['Tech E-Mail']['method']);
+        $this->assertSame('emptyValue', $byType['Tech name']['method']);
+
+        // Default handle path also uses wildcard
+        $handleEntries = array_filter($redacted, static function (array $r) {
+            return isset($r['prePath']);
+        });
+        foreach ($handleEntries as $entry) {
+            $this->assertStringContainsString('@.roles[*]', $entry['prePath']);
+        }
     }
 
     public function testRdapConformance(): void

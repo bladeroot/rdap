@@ -254,15 +254,16 @@ final class Domain extends Common
     private function setDefaultRedactedRules(): void
     {
         $this->redacted = [];
-        foreach (($this->getEntities() ?? []) as $k => $v) {
-            if ($v->getHandle() !== null) {
+        foreach (($this->getEntities() ?? []) as $v) {
+            if ($v->getHandle() !== null || empty($v->getRoles())) {
                 continue;
             }
+            $role = $v->getRoles()[0]->getValue();
             $this->redacted[] = [
                 'name' => [
                     'type' => 'Registry registrant ID',
                 ],
-                'prePath' => "$.entities[{$k}].handle",
+                'prePath' => "$.entities[?(@.roles[*]=='{$role}')].handle",
                 'pathLang' => "jsonpath",
                 'method' => 'removal',
                 'reason' => [
@@ -292,10 +293,12 @@ final class Domain extends Common
             $base = "$.entities[?(@.roles[*]=='{$type}')].vcardArray[1]";
 
             if ($type === 'technical') {
-                $this->redacted[] = $this->setRedactedEmptyValue(
-                    "Tech name",
-                    "{$base}[?(@[0]=='fn')][3]"
-                );
+                $this->redacted[] = $this->setRedactedEmptyValue("Tech name", "{$base}[?(@[0]=='fn')][3]");
+                $this->redacted[] = $this->setRedactedEmptyValue("Tech E-Mail", "{$base}[?(@[0]=='email')][3]", true);
+                $this->redacted[] = $this->setRedactedEmptyValue("Tech tel", "{$base}[?(@[0]=='tel')][3]");
+                foreach ([2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal code'] as $n => $name) {
+                    $this->redacted[] = $this->setRedactedEmptyValue("Tech {$name}", "{$base}[?(@[0]=='adr')][3][{$n}]");
+                }
                 continue;
             }
 
