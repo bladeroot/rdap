@@ -311,7 +311,7 @@ final class Domain extends Common
                     "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='tel')][3]"
                 );
 
-                foreach ([ 2 => 'Street', 3 => 'City', 4 => 'State', 5 => 'Postal code'] as $n => $name) {
+                foreach ([ 2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal code'] as $n => $name) {
                     $this->redacted[] = $this->setRedactedEmptyValue(
                         "Registrant {$name}",
                         "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='adr')][3][{$n}]"
@@ -329,7 +329,7 @@ final class Domain extends Common
             ],
             "postPath" => "{$path}",
             "pathLang" => "jsonpath",
-            "method" => $redacted ? 'redactedValue' : "emptyValue",
+            "method" => $redacted ? 'replacementValue' : "emptyValue",
             "reason" => [
                 "description" => "Server policy",
             ],
