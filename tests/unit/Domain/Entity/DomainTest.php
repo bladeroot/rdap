@@ -11,6 +11,7 @@
 namespace hiqdev\rdap\core\tests\unit\Domain\Entity;
 
 use hiqdev\rdap\core\Domain\Constant\EventAction;
+use hiqdev\rdap\core\Domain\Constant\Role;
 use hiqdev\rdap\core\Domain\Constant\Status;
 use hiqdev\rdap\core\Domain\Entity\Domain;
 use hiqdev\rdap\core\Domain\Entity\Entity;
@@ -144,6 +145,50 @@ class DomainTest extends TestCase
         $domain = new Domain(DomainName::of('ЗмішанаКапіталізація.укр'));
         $this->assertSame('змішанакапіталізація.укр', (string) $domain->getLdhName()->toUnicode());
         $this->assertSame('xn--80aaaaa1bevlem1a3byds8jrehdd.xn--j1amh', (string) $domain->getLdhName());
+    }
+
+    public function testRedactedPathsUseWildcardRoleFilter(): void
+    {
+        $entity = new Entity();
+        $entity->addRole(Role::byName('REGISTRANT'));
+        $entity->addRole(Role::byName('ADMINISTRATIVE'));
+        $entity->addRole(Role::byName('TECHNICAL'));
+        $entity->addRole(Role::byName('BILLING'));
+
+        $domain = new Domain(DomainName::of('example.com'));
+        $domain->addEntity($entity);
+        $domain->setRedacted(true);
+
+        $paths = array_column(array_column($domain->getRedacted(), 'postPath'), null);
+        foreach (array_filter($paths) as $path) {
+            $this->assertStringNotContainsString('@.roles[0]', $path, 'JSONPath must not use hardcoded role index 0');
+            $this->assertStringNotContainsString('@.roles[1]', $path, 'JSONPath must not use hardcoded role index 1');
+            $this->assertStringNotContainsString('@.roles[2]', $path, 'JSONPath must not use hardcoded role index 2');
+            $this->assertStringContainsString('@.roles[*]', $path, 'JSONPath must use wildcard [*] for role matching');
+        }
+    }
+
+    public function testRedactedPathsCorrectWhenTechnicalOnlyEntity(): void
+    {
+        $techEntity = new Entity();
+        $techEntity->addRole(Role::byName('TECHNICAL'));
+
+        $registrantEntity = new Entity();
+        $registrantEntity->addRole(Role::byName('REGISTRANT'));
+
+        $domain = new Domain(DomainName::of('example.com'));
+        $domain->addEntity($techEntity);
+        $domain->addEntity($registrantEntity);
+        $domain->setRedacted(true);
+
+        $techPaths = array_filter(
+            $domain->getRedacted(),
+            static function (array $r) { return ($r['name']['type'] ?? '') === 'Tech name'; }
+        );
+        $this->assertCount(1, $techPaths, 'Must have exactly one Tech name redacted entry');
+
+        $techPath = reset($techPaths)['postPath'];
+        $this->assertStringContainsString("@.roles[*]=='technical'", $techPath);
     }
 
     public function testRdapConformance(): void

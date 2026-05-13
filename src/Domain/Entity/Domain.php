@@ -277,46 +277,46 @@ final class Domain extends Common
         $this->redacted = $this->redacted ?: [];
 
         foreach (['registrant', 'technical'] as $type) {
-            $rType= Role::byName(strtoupper($type));
-            foreach (($this->getEntities() ?? []) as $k => $v) {
-                if (!in_array($rType, $v->getRoles(), true)) {
-                    continue ;
+            $rType = Role::byName(strtoupper($type));
+            $hasRole = false;
+            foreach (($this->getEntities() ?? []) as $v) {
+                if (in_array($rType, $v->getRoles(), true)) {
+                    $hasRole = true;
+                    break;
                 }
+            }
+            if (!$hasRole) {
+                continue;
+            }
 
-                $roleIndex = array_search($rType, $v->getRoles());
+            $base = "$.entities[?(@.roles[*]=='{$type}')].vcardArray[1]";
 
-                if ($type === 'technical') {
-                    $this->redacted[] = $this->setRedactedEmptyValue(
-                        "Tech name",
-                        "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='fn')][3]"
-                    );
-
-                    continue;
-                }
-
-
+            if ($type === 'technical') {
                 $this->redacted[] = $this->setRedactedEmptyValue(
-                    "Registrant name",
-                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='fn')][3]"
+                    "Tech name",
+                    "{$base}[?(@[0]=='fn')][3]"
                 );
+                continue;
+            }
 
+            $this->redacted[] = $this->setRedactedEmptyValue(
+                "Registrant name",
+                "{$base}[?(@[0]=='fn')][3]"
+            );
+            $this->redacted[] = $this->setRedactedEmptyValue(
+                "Registrant E-Mail",
+                "{$base}[?(@[0]=='email')][3]",
+                true
+            );
+            $this->redacted[] = $this->setRedactedEmptyValue(
+                "Registrant tel",
+                "{$base}[?(@[0]=='tel')][3]"
+            );
+            foreach ([2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal code'] as $n => $name) {
                 $this->redacted[] = $this->setRedactedEmptyValue(
-                    "Registrant E-Mail",
-                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='email')][3]",
-                    true
+                    "Registrant {$name}",
+                    "{$base}[?(@[0]=='adr')][3][{$n}]"
                 );
-
-                $this->redacted[] = $this->setRedactedEmptyValue(
-                    "Registrant tel",
-                    "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='tel')][3]"
-                );
-
-                foreach ([ 2 => 'Street', 3 => 'City', 4 => 'Province', 5 => 'Postal code'] as $n => $name) {
-                    $this->redacted[] = $this->setRedactedEmptyValue(
-                        "Registrant {$name}",
-                        "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1][?(@[0]=='adr')][3][{$n}]"
-                    );
-                }
             }
         }
     }
