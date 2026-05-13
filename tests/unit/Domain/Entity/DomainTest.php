@@ -173,7 +173,7 @@ class DomainTest extends TestCase
         $this->assertNotContains('Registry Billing ID', $types);
 
         foreach ($redacted as $entry) {
-            $this->assertRegExp('/\.roles\[0\]==/', $entry['prePath']);
+            $this->assertRegExp('/\.roles\[\d+\]==/', $entry['prePath']);
         }
     }
 
@@ -291,11 +291,12 @@ class DomainTest extends TestCase
         $this->assertEmpty($redacted, 'Admin and Billing entities must not produce any redacted entries');
     }
 
-    public function testMergedRegistrantTechEntitySkipsTechEntries(): void
+    public function testMergedRegistrantTechEntityGeneratesBothBlocks(): void
     {
-        // Same contact is both registrant and technical (roles[0]=='registrant').
-        // Tech-specific redacted entries must NOT be generated because
-        // @.roles[0]=='technical' would not match this entity.
+        // Same contact has both registrant (index 0) and technical (index 1) roles.
+        // Both Registrant and Tech entries must be generated using the actual
+        // role indices so @.roles[0]=='registrant' and @.roles[1]=='technical'
+        // both correctly resolve to the same merged entity.
         $merged = new Entity();
         $merged->addRole(Role::byName('REGISTRANT'));
         $merged->addRole(Role::byName('TECHNICAL'));
@@ -308,9 +309,16 @@ class DomainTest extends TestCase
 
         $this->assertContains('Registrant Name', $types);
         $this->assertContains('Registrant Email', $types);
-        $this->assertNotContains('Tech Name', $types);
-        $this->assertNotContains('Tech Email', $types);
-        $this->assertNotContains('Tech Phone', $types);
+        $this->assertContains('Tech Name', $types);
+        $this->assertContains('Tech Email', $types);
+        $this->assertContains('Tech Phone', $types);
+
+        $byType = [];
+        foreach ($domain->getRedacted() as $r) {
+            $byType[$r['name']['type']] = $r;
+        }
+        $this->assertRegExp("/@\.roles\[0\]=='registrant'/", $byType['Registrant Name']['postPath']);
+        $this->assertRegExp("/@\.roles\[1\]=='technical'/", $byType['Tech Name']['postPath']);
     }
 
     public function testRdapConformance(): void
