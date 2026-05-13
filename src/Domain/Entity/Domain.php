@@ -131,11 +131,7 @@ final class Domain extends Common
      */
     public function getEntities(): ?array
     {
-        if (empty($this->entities['entities'])) {
-            return $this->entities ?? [];
-        }
-
-        return $this->entities['entities'];
+        return $this->entities;
     }
 
     /**
