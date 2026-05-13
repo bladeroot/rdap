@@ -52,7 +52,7 @@ final class SymfonySerializer implements SerializerInterface
             null,
             [
                 ObjectNormalizer::SKIP_NULL_VALUES => true,
-                ObjectNormalizer::IGNORED_ATTRIBUTES => [],
+                ObjectNormalizer::IGNORED_ATTRIBUTES => ['vcard'],
             ]
         );
         $serializer = new Serializer([

@@ -42,7 +42,7 @@ class EntityTest extends TestCase
 
         $entity = new Entity();
         $entity->addVcard($vcard1);
-        $this->assertSame($vcard1, $entity->getVcardArray()[1]);
+        $this->assertSame($vcard1, $entity->getVcard()[1]);
     }
 
     public function testEntity(): void

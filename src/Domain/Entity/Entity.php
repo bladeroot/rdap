@@ -38,9 +38,9 @@ final class Entity extends Common
     private $handle;
 
     /**
-     * @var VCard[]|null a jCard with the entity's VCard information
+     * @var VCard|null a jCard with the entity's VCard information
      */
-    private $vcardArray;
+    private $vcard;
 
     /**
      * @var Role[]|null an array, each role signifying the relationship an
@@ -89,23 +89,32 @@ final class Entity extends Common
     }
 
     /**
-     * @return VCard[]|null
+     * @return array|null jCard wrapper array ["vcard", [<properties>]]
      */
-    public function getVcardArray()
+    public function getVcard(): ?array
     {
-        return $this->vcardArray;
+        return $this->vcard;
+    }
+
+    /**
+     * @deprecated use getVcard()
+     * @return array|null
+     */
+    public function getVcardArray(): ?array
+    {
+        return $this->vcard;
     }
 
     /**
      * @param VCard $vcard
      */
-    public function addVcard( $vcard): void
+    public function addVcard($vcard): void
     {
-        if (empty($this->vcardArray)) {
-            $this->vcardArray = ['vcard'];
+        if (empty($this->vcard)) {
+            $this->vcard = ['vcard'];
         }
 
-        $this->vcardArray[] = $vcard;
+        $this->vcard[] = $vcard;
     }
 
     /**

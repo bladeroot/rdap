@@ -31,7 +31,7 @@ final class Event
      */
     private $eventDate;
     /**
-     * @var Link[]
+     * @var Link[]|null
      */
     private $links;
 
