@@ -59,7 +59,10 @@ final class SymfonySerializer implements SerializerInterface
             new ArrayDenormalizer(),
 
             new DomainNormalizer(),
-            new DateTimeNormalizer(),
+            new DateTimeNormalizer([
+                DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i:s\Z',
+                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('UTC'),
+            ]),
             new EnumNormalizer(),
             new VcardNormalizer(),
             new AsStringNormalizer(),
