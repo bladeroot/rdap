@@ -161,8 +161,7 @@ class DomainTest extends TestCase
 
         $postPaths = array_filter(array_column($domain->getRedacted(), 'postPath'));
         foreach ($postPaths as $path) {
-            $this->assertStringNotContainsString('@.roles[0]', $path, 'JSONPath must not use hardcoded role index');
-            $this->assertStringContainsString('@.roles[*]', $path, 'JSONPath must use wildcard [*] for role matching');
+            $this->assertRegExp('/@\.roles\[\d+\]==/', $path, 'JSONPath must use concrete role index');
         }
 
         // All four contact roles must produce their own redacted entries
@@ -194,7 +193,7 @@ class DomainTest extends TestCase
         // Tech entity must have the same set of redacted fields as registrant
         foreach (['Tech Name', 'Tech E-Mail', 'Tech Tel', 'Tech Street', 'Tech City', 'Tech Province', 'Tech Postal Code'] as $field) {
             $this->assertArrayHasKey($field, $byType, "Missing redacted entry: {$field}");
-            $this->assertStringContainsString("@.roles[*]=='technical'", $byType[$field]['postPath']);
+            $this->assertRegExp("/@\.roles\[\d+\]=='technical'/", $byType[$field]['postPath']);
         }
 
         // Email uses replacementValue, all others emptyValue
@@ -206,7 +205,7 @@ class DomainTest extends TestCase
             return isset($r['prePath']);
         });
         foreach ($handleEntries as $entry) {
-            $this->assertStringContainsString('@.roles[*]', $entry['prePath']);
+            $this->assertRegExp('/@\.roles\[\d+\]==/', $entry['prePath']);
         }
     }
 

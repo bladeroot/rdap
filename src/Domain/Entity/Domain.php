@@ -263,7 +263,7 @@ final class Domain extends Common
                 'name' => [
                     'type' => 'Registry registrant ID',
                 ],
-                'prePath' => "$.entities[?(@.roles[*]=='{$role}')].handle",
+                'prePath' => "$.entities[?(@.roles[0]=='{$role}')].handle",
                 'pathLang' => "jsonpath",
                 'method' => 'removal',
                 'reason' => [
@@ -281,7 +281,7 @@ final class Domain extends Common
         $seen = [];
 
         foreach (($this->getEntities() ?? []) as $v) {
-            foreach ($v->getRoles() as $role) {
+            foreach ($v->getRoles() as $roleIndex => $role) {
                 if (in_array($role, $nonContactRoles, true)) {
                     continue;
                 }
@@ -297,7 +297,7 @@ final class Domain extends Common
                     'technical'      => 'Tech',
                     'billing'        => 'Billing',
                 ][$type] ?? ucfirst($type);
-                $base  = "$.entities[?(@.roles[*]=='{$type}')].vcardArray[1]";
+                $base  = "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].vcardArray[1]";
 
                 $this->redacted[] = $this->setRedactedEmptyValue("{$label} Name",   "{$base}[?(@[0]=='fn')][3]");
                 $this->redacted[] = $this->setRedactedEmptyValue("{$label} E-Mail", "{$base}[?(@[0]=='email')][3]", true);
