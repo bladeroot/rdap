@@ -285,34 +285,39 @@ final class Domain extends Common
         $seenTechnical  = false;
 
         foreach (($this->getEntities() ?? []) as $v) {
-            foreach ($v->getRoles() as $role) {
-                $type = $role->getValue();
+            $roles = $v->getRoles();
+            if (empty($roles)) {
+                continue;
+            }
+            // Use only the primary role (index 0) because our JSONPaths use
+            // @.roles[0]=='type' — if the entity's first role doesn't match,
+            // the path would evaluate to an empty set and fail conformance.
+            $primaryType = $roles[0]->getValue();
 
-                if ($type === 'registrant' && !$seenRegistrant) {
-                    $seenRegistrant = true;
-                    $base = "$.entities[?(@.roles[0]=='registrant')].vcardArray[1]";
+            if ($primaryType === 'registrant' && !$seenRegistrant) {
+                $seenRegistrant = true;
+                $base = "$.entities[?(@.roles[0]=='registrant')].vcardArray[1]";
 
-                    $this->redacted[] = $this->redactedPostPath('Registrant Name',        "{$base}[?(@[0]=='fn')][3]");
-                    $this->redacted[] = $this->redactedPrePath( 'Registrant Organization', "{$base}[?(@[0]=='org')]");
-                    $this->redacted[] = $this->redactedPostPath('Registrant Street',       "{$base}[?(@[0]=='adr')][3][2]");
-                    $this->redacted[] = $this->redactedPostPath('Registrant City',         "{$base}[?(@[0]=='adr')][3][3]");
-                    $this->redacted[] = $this->redactedPostPath('Registrant Postal Code',  "{$base}[?(@[0]=='adr')][3][5]");
-                    $this->redacted[] = $this->redactedPrePath( 'Registrant Phone',        "{$base}[?(@[1].type=='voice')]");
-                    $this->redacted[] = $this->redactedPrePath( 'Registrant Phone Ext',    "{$base}[?(@[1].type=='voice')]");
-                    $this->redacted[] = $this->redactedPrePath( 'Registrant Fax',          "{$base}[?(@[1].type=='fax')]");
-                    $this->redacted[] = $this->redactedPrePath( 'Registrant Fax Ext',      "{$base}[?(@[1].type=='fax')]");
-                    $this->redacted[] = $this->redactedPostPath('Registrant Email',        "{$base}[?(@[0]=='email')][3]", 'replacementValue');
-                }
+                $this->redacted[] = $this->redactedPostPath('Registrant Name',        "{$base}[?(@[0]=='fn')][3]");
+                $this->redacted[] = $this->redactedPrePath( 'Registrant Organization', "{$base}[?(@[0]=='org')]");
+                $this->redacted[] = $this->redactedPostPath('Registrant Street',       "{$base}[?(@[0]=='adr')][3][2]");
+                $this->redacted[] = $this->redactedPostPath('Registrant City',         "{$base}[?(@[0]=='adr')][3][3]");
+                $this->redacted[] = $this->redactedPostPath('Registrant Postal Code',  "{$base}[?(@[0]=='adr')][3][5]");
+                $this->redacted[] = $this->redactedPrePath( 'Registrant Phone',        "{$base}[?(@[1].type=='voice')]");
+                $this->redacted[] = $this->redactedPrePath( 'Registrant Phone Ext',    "{$base}[?(@[1].type=='voice')]");
+                $this->redacted[] = $this->redactedPrePath( 'Registrant Fax',          "{$base}[?(@[1].type=='fax')]");
+                $this->redacted[] = $this->redactedPrePath( 'Registrant Fax Ext',      "{$base}[?(@[1].type=='fax')]");
+                $this->redacted[] = $this->redactedPostPath('Registrant Email',        "{$base}[?(@[0]=='email')][3]", 'replacementValue');
+            }
 
-                if ($type === 'technical' && !$seenTechnical) {
-                    $seenTechnical = true;
-                    $base = "$.entities[?(@.roles[0]=='technical')].vcardArray[1]";
+            if ($primaryType === 'technical' && !$seenTechnical) {
+                $seenTechnical = true;
+                $base = "$.entities[?(@.roles[0]=='technical')].vcardArray[1]";
 
-                    $this->redacted[] = $this->redactedPostPath('Tech Name',      "{$base}[?(@[0]=='fn')][3]");
-                    $this->redacted[] = $this->redactedPrePath( 'Tech Phone',     "{$base}[?(@[1].type=='voice')]");
-                    $this->redacted[] = $this->redactedPrePath( 'Tech Phone Ext', "{$base}[?(@[1].type=='voice')]");
-                    $this->redacted[] = $this->redactedPostPath('Tech Email',     "{$base}[?(@[0]=='email')][3]", 'replacementValue');
-                }
+                $this->redacted[] = $this->redactedPostPath('Tech Name',      "{$base}[?(@[0]=='fn')][3]");
+                $this->redacted[] = $this->redactedPrePath( 'Tech Phone',     "{$base}[?(@[1].type=='voice')]");
+                $this->redacted[] = $this->redactedPrePath( 'Tech Phone Ext', "{$base}[?(@[1].type=='voice')]");
+                $this->redacted[] = $this->redactedPostPath('Tech Email',     "{$base}[?(@[0]=='email')][3]", 'replacementValue');
             }
         }
     }

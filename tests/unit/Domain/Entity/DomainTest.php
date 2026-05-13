@@ -291,6 +291,28 @@ class DomainTest extends TestCase
         $this->assertEmpty($redacted, 'Admin and Billing entities must not produce any redacted entries');
     }
 
+    public function testMergedRegistrantTechEntitySkipsTechEntries(): void
+    {
+        // Same contact is both registrant and technical (roles[0]=='registrant').
+        // Tech-specific redacted entries must NOT be generated because
+        // @.roles[0]=='technical' would not match this entity.
+        $merged = new Entity();
+        $merged->addRole(Role::byName('REGISTRANT'));
+        $merged->addRole(Role::byName('TECHNICAL'));
+
+        $domain = new Domain(DomainName::of('example.com'));
+        $domain->addEntity($merged);
+        $domain->setRedacted(true);
+
+        $types = array_column(array_column($domain->getRedacted(), 'name'), 'type');
+
+        $this->assertContains('Registrant Name', $types);
+        $this->assertContains('Registrant Email', $types);
+        $this->assertNotContains('Tech Name', $types);
+        $this->assertNotContains('Tech Email', $types);
+        $this->assertNotContains('Tech Phone', $types);
+    }
+
     public function testRdapConformance(): void
     {
         $domain = new Domain(DomainName::of('example.com'));
