@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace hiqdev\rdap\core\Infrastructure\Provider;
+
+use hiqdev\rdap\core\Domain\ValueObject\DomainName;
+use hiqdev\rdap\core\Infrastructure\Query\DomainNamesQuery;
+use Iterator;
+
+final class DomainNamesProvider
+{
+    /** @var DomainNamesRepositoryInterface */
+    private $repository;
+
+    public function __construct(DomainNamesRepositoryInterface $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    /** @return Iterator which yields DomainName instances */
+    public function byQuery(DomainNamesQuery $query): Iterator
+    {
+        foreach ($this->repository->findNamesByQuery($query) as $domain) {
+            yield DomainName::of($domain['name']);
+        }
+    }
+}
