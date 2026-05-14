@@ -26,7 +26,11 @@ interface SerializerInterface
      * @param string $targetFormat
      * @return mixed depending on $targetFormat
      */
-    public function serialize(object $entity, string $targetFormat = self::FORMAT_JSON);
+    public function serialize(
+        object $entity,
+        string $targetFormat = self::FORMAT_JSON,
+        array $targetOptions = []
+    ): string;
 
     /**
      * @param array|object $input

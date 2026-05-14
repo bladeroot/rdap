@@ -14,7 +14,6 @@ use hiqdev\rdap\core\Domain\Constant\ObjectClassName;
 use hiqdev\rdap\core\Domain\Constant\Role;
 use hiqdev\rdap\core\Domain\ValueObject\Event;
 use hiqdev\rdap\core\Domain\ValueObject\PublicId;
-use JeroenDesloovere\VCard\VCard;
 
 final class Entity extends Common
 {
@@ -38,9 +37,13 @@ final class Entity extends Common
     private $handle;
 
     /**
-     * @var VCard[]|null a jCard with the entity's VCard information
+     * jCard wrapper array: ["vcard", [<property arrays>]] per RFC 7095.
+     * The literal string "vcard" is the first element; the VCard object
+     * is appended as the second element and serialised by VcardNormalizer.
+     *
+     * @var array|null
      */
-    private $vcardArray;
+    private $vcard;
 
     /**
      * @var Role[]|null an array, each role signifying the relationship an
@@ -89,11 +92,20 @@ final class Entity extends Common
     }
 
     /**
-     * @return VCard[]|null
+     * @return array|null jCard wrapper array ["vcard", [<properties>]]
+     */
+    public function getVcard(): ?array
+    {
+        return $this->vcard;
+    }
+
+    /**
+     * @deprecated use getVcard()
+     * @return array|null
      */
     public function getVcardArray(): ?array
     {
-        return $this->vcardArray;
+        return $this->vcard;
     }
 
     /**
@@ -101,10 +113,12 @@ final class Entity extends Common
      */
     public function addVcard(VCard $vcard): void
     {
-        if (empty($this->vcardArray)) {
-            $this->vcardArray = [];
+        if (empty($this->vcard)) {
+            // "vcard" sentinel required by jCard format (RFC 7095 §3.2)
+            $this->vcard = ['vcard'];
         }
-        $this->vcardArray[] = $vcard;
+
+        $this->vcard[] = $vcard;
     }
 
     /**

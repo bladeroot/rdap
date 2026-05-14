@@ -20,7 +20,7 @@ final class Notice
     private $title;
 
     /**
-     * @var string
+     * @var string||null
      */
     private $type;
 
@@ -42,10 +42,9 @@ final class Notice
      * @param string[] $description
      * @param Link[] $links
      */
-    public function __construct(string $title, string $type, array $description, array $links = [])
+    public function __construct(string $title, array $description, array $links = [])
     {
         $this->title = $title;
-        $this->type = $type;
         $this->description = $description;
         $this->links = $links;
     }
@@ -61,9 +60,16 @@ final class Notice
     /**
      * @return string
      */
-    public function getType(): string
+    public function getType(): ?string
     {
-        return $this->type;
+        return $this->type ?? null;
+    }
+
+    public function setType(?string $type): self
+    {
+        $this->type = $type;
+
+        return $this;
     }
 
     /**

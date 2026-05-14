@@ -15,9 +15,12 @@ use hiqdev\rdap\core\Domain\ValueObject\DomainName;
 use hiqdev\rdap\core\Domain\ValueObject\DomainVariant\Variant;
 use hiqdev\rdap\core\Domain\ValueObject\PublicId;
 use hiqdev\rdap\core\Domain\ValueObject\SecureDNS;
+use hiqdev\rdap\core\Domain\Constant\Role;
 
 final class Domain extends Common
 {
+    use TopMostEntityTrait;
+
     /**
      * @var DomainName
      */
@@ -58,11 +61,16 @@ final class Domain extends Common
      */
     private $network;
 
+    /** @var  array */
+    private $redacted;
+
     public function __construct(DomainName $ldhName)
     {
         parent::__construct(ObjectClassName::DOMAIN());
 
         $this->ldhName = $ldhName->toLDH();
+
+        $this->secureDNS = new SecureDNS();
     }
 
     /**
@@ -111,9 +119,9 @@ final class Domain extends Common
     }
 
     /**
-     * @return SecureDNS|null
+     * @return SecureDNS
      */
-    public function getSecureDNS(): ?SecureDNS
+    public function getSecureDNS(): SecureDNS
     {
         return $this->secureDNS;
     }
@@ -207,6 +215,7 @@ final class Domain extends Common
         if ($this->entities === null) {
             $this->entities = [];
         }
+
         $this->entities[] = $entity;
 
         return $this;
@@ -221,5 +230,108 @@ final class Domain extends Common
         $this->network = $network;
 
         return $this;
+    }
+
+    public function getRedacted(): array
+    {
+        return $this->redacted ?? [];
+    }
+
+    public function setRedacted(?bool $wp = false): Domain
+    {
+        $this->setDefaultRedactedRules();
+        if ($wp === true) {
+            $this->setWPRedactedRules();
+        }
+
+        return $this;
+    }
+
+    private function setDefaultRedactedRules(): void
+    {
+        $this->redacted = [];
+        $allowedRoles = ['registrant' => 'Registrant', 'technical' => 'Tech'];
+
+        foreach (($this->getEntities() ?? []) as $v) {
+            if ($v->getHandle() !== null || empty($v->getRoles())) {
+                continue;
+            }
+            foreach ($v->getRoles() as $roleIndex => $role) {
+                $type = $role->getValue();
+                if (!isset($allowedRoles[$type])) {
+                    continue;
+                }
+                $label = $allowedRoles[$type];
+                $this->redacted[] = [
+                    'name'     => ['type' => "Registry {$label} ID"],
+                    'prePath'  => "$.entities[?(@.roles[{$roleIndex}]=='{$type}')].handle",
+                    'pathLang' => 'jsonpath',
+                    'method'   => 'removal',
+                    'reason'   => ['description' => 'Server policy'],
+                ];
+            }
+        }
+    }
+
+    private function setWPRedactedRules(): void
+    {
+        $this->redacted = $this->redacted ?: [];
+
+        $seenRegistrant = false;
+        $seenTechnical  = false;
+
+        foreach (($this->getEntities() ?? []) as $v) {
+            foreach ($v->getRoles() as $roleIndex => $role) {
+                $type = $role->getValue();
+
+                if ($type === 'registrant' && !$seenRegistrant) {
+                    $seenRegistrant = true;
+                    $base = "$.entities[?(@.roles[{$roleIndex}]=='registrant')].vcardArray[1]";
+
+                    $this->redacted[] = $this->redactedPostPath('Registrant Name',        "{$base}[?(@[0]=='fn')][3]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Organization', "{$base}[?(@[0]=='org')]");
+                    $this->redacted[] = $this->redactedPostPath('Registrant Street',       "{$base}[?(@[0]=='adr')][3][2]");
+                    $this->redacted[] = $this->redactedPostPath('Registrant City',         "{$base}[?(@[0]=='adr')][3][3]");
+                    $this->redacted[] = $this->redactedPostPath('Registrant Postal Code',  "{$base}[?(@[0]=='adr')][3][5]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Phone',        "{$base}[?(@[1].type=='voice')]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Phone Ext',    "{$base}[?(@[1].type=='voice')]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Fax',          "{$base}[?(@[1].type=='fax')]");
+                    $this->redacted[] = $this->redactedPrePath( 'Registrant Fax Ext',      "{$base}[?(@[1].type=='fax')]");
+                    $this->redacted[] = $this->redactedPostPath('Registrant Email',        "{$base}[?(@[0]=='email')][3]", 'replacementValue');
+                }
+
+                if ($type === 'technical' && !$seenTechnical) {
+                    $seenTechnical = true;
+                    $base = "$.entities[?(@.roles[{$roleIndex}]=='technical')].vcardArray[1]";
+
+                    $this->redacted[] = $this->redactedPostPath('Tech Name',      "{$base}[?(@[0]=='fn')][3]");
+                    $this->redacted[] = $this->redactedPrePath( 'Tech Phone',     "{$base}[?(@[1].type=='voice')]");
+                    $this->redacted[] = $this->redactedPrePath( 'Tech Phone Ext', "{$base}[?(@[1].type=='voice')]");
+                    $this->redacted[] = $this->redactedPostPath('Tech Email',     "{$base}[?(@[0]=='email')][3]", 'replacementValue');
+                }
+            }
+        }
+    }
+
+    private function redactedPostPath(string $name, string $path, string $method = 'emptyValue'): array
+    {
+        return [
+            'name'     => ['type' => $name],
+            'postPath' => $path,
+            'pathLang' => 'jsonpath',
+            'method'   => $method,
+            'reason'   => ['description' => 'Server policy'],
+        ];
+    }
+
+    private function redactedPrePath(string $name, string $path): array
+    {
+        return [
+            'name'     => ['type' => $name],
+            'prePath'  => $path,
+            'pathLang' => 'jsonpath',
+            'method'   => 'removal',
+            'reason'   => ['description' => 'Server policy'],
+        ];
     }
 }

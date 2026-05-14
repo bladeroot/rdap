@@ -16,7 +16,7 @@ use hiqdev\rdap\core\Domain\ValueObject\SecureDNS\KeyData;
 class SecureDNS
 {
     /**
-     * @var bool
+     * @var bool|null
      */
     private $zoneSigned;
 
@@ -26,17 +26,17 @@ class SecureDNS
     private $delegationSigned;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $maxSigLife;
 
     /**
-     * @var DSData[]
+     * @var DSData[]|null
      */
     private $dsData;
 
     /**
-     * @var KeyData[]
+     * @var KeyData[]|null
      */
     private $keyData;
 
@@ -49,14 +49,14 @@ class SecureDNS
      * @param KeyData[] $keyData
      */
     public function __construct(
-        bool $zoneSigned,
-        bool $delegationSigned,
-        int $maxSigLife,
-        array $dsData,
-        array $keyData
+        ?bool $zoneSigned = null,
+        bool $delegationSigned = false,
+        ?int $maxSigLife = null,
+        ?array $dsData = null,
+        ?array $keyData = null
     ) {
-        $this->delegationSigned = $delegationSigned;
         $this->zoneSigned = $zoneSigned;
+        $this->delegationSigned = $delegationSigned;
         $this->maxSigLife = $maxSigLife;
         $this->dsData = $dsData;
         $this->keyData = $keyData;
@@ -65,25 +65,25 @@ class SecureDNS
     /**
      * @return DSData[]
      */
-    public function getDsData(): array
+    public function getDsData(): ?array
     {
-        return $this->dsData;
+        return $this->dsData ?? null;
     }
 
     /**
      * @return KeyData[]
      */
-    public function getKeyData(): array
+    public function getKeyData(): ?array
     {
-        return $this->keyData;
+        return $this->keyData ?? null;
     }
 
     /**
      * @return int
      */
-    public function getMaxSigLife(): int
+    public function getMaxSigLife(): ?int
     {
-        return $this->maxSigLife;
+        return $this->maxSigLife ?? null;
     }
 
     /**
@@ -97,8 +97,8 @@ class SecureDNS
     /**
      * @return bool
      */
-    public function isZoneSigned(): bool
+    public function isZoneSigned(): ?bool
     {
-        return $this->zoneSigned;
+        return $this->zoneSigned ?? null;
     }
 }

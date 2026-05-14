@@ -36,6 +36,7 @@ final class EventAction extends Enum
     public const REREGISTRATION               = 'reregistration';
     public const LAST_CHANGED                 = 'last changed';
     public const EXPIRATION                   = 'expiration';
+    public const REGISTRAR_EXPIRATION         = 'registrar expiration';
     public const DELETION                     = 'deletion';
     public const REINSTANTIATION              = 'reinstantiation';
     public const TRANSFER                     = 'transfer';

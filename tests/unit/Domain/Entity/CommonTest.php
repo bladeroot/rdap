@@ -39,8 +39,8 @@ class CommonTest extends TestCase
 
     public function testNoticesAndRemarks(): void
     {
-        $notice1 = new Notice('title1', 'type1', ['description1']);
-        $notice2 = new Notice('title2', 'type2', ['description2']);
+        $notice1 = new Notice('title1', ['description1']);
+        $notice2 = new Notice('title2', ['description2']);
         $common = $this->getMockForAbstractClass(Common::class, [ObjectClassName::ENTITY()]);
         $common->addNotice($notice1);
         $common->addNotice($notice2);
@@ -99,14 +99,6 @@ class CommonTest extends TestCase
         $common = $this->getMockForAbstractClass(Common::class, [ObjectClassName::ENTITY()]);
         $common->addStatus($status1);
         $common->addStatus($status2);
-        $this->assertSame([$status1, $status2], $common->getStatuses());
-    }
-
-    public function testRdapConformance(): void
-    {
-        $common = $this->getMockForAbstractClass(Common::class, [ObjectClassName::ENTITY()]);
-        $newConf = 'rdap_level_1';
-        $common->addRdapConformance($newConf);
-        $this->assertContains($newConf, $common->getRdapConformance());
+        $this->assertSame([$status1, $status2], $common->getStatus());
     }
 }

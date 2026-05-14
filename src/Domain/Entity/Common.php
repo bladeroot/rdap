@@ -21,14 +21,6 @@ use hiqdev\rdap\core\Domain\ValueObject\Notice;
 
 abstract class Common
 {
-    public const DEFAULT_RDAP_CONFORMANCE = 'rdap_level_0';
-
-    /**
-     * @var string[] The data structure named "rdapConformance" is an array of strings,
-     * each providing a hint as to the specifications used in the construction of the response.
-     * This data structure appears only in the topmost JSON object of a response.
-     */
-    private $rdapConformance = [self::DEFAULT_RDAP_CONFORMANCE];
 
     /**
      * @var ObjectClassName
@@ -74,14 +66,6 @@ abstract class Common
     public function __construct(ObjectClassName $objectClassName)
     {
         $this->objectClassName = $objectClassName;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getRdapConformance(): array
-    {
-        return $this->rdapConformance;
     }
 
     /**
@@ -143,20 +127,9 @@ abstract class Common
     /**
      * @return Status[]|null
      */
-    public function getStatuses(): ?array
+    public function getStatus(): ?array
     {
         return $this->status;
-    }
-
-    /**
-     * @param string $rdapConformance
-     * @return Common
-     */
-    public function addRdapConformance(string $rdapConformance): Common
-    {
-        $this->rdapConformance[] = $rdapConformance;
-
-        return $this;
     }
 
     /**

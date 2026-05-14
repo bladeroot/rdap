@@ -30,7 +30,7 @@ use hiqdev\rdap\core\Domain\ValueObject\Notice;
 use hiqdev\rdap\core\Domain\ValueObject\PublicId;
 use hiqdev\rdap\core\Domain\ValueObject\SecureDNS;
 use hiqdev\rdap\core\Infrastructure\Serialization\Symfony\SymfonySerializer;
-use JeroenDesloovere\VCard\VCard;
+use hiqdev\rdap\core\Domain\Entity\VCard;
 use JeroenDesloovere\VCard\VCardDateMock;
 use PHPUnit\Framework\TestCase;
 
@@ -54,6 +54,29 @@ class DomainSerializerTest extends TestCase
         $stubFilename = __DIR__ . '/stub/full_domain_info.json';
 //        file_put_contents($stubFilename, $json);
         $this->assertJsonStringEqualsJsonFile($stubFilename, $json);
+    }
+
+    /**
+     * @dataProvider eventDateProvider
+     */
+    public function testEventDateSerializedWithZSuffix(DateTimeImmutable $date, string $expectedDate): void
+    {
+        $domain = new Domain(DomainName::of('example.com'));
+        $domain->addEvent(Event::occurred(EventAction::REGISTRATION(), $date));
+
+        $json = json_decode($this->getSerializer()->serialize($domain), true);
+
+        $this->assertSame($expectedDate, $json['events'][0]['eventDate']);
+    }
+
+    public function eventDateProvider(): array
+    {
+        return [
+            'UTC offset +00:00 becomes Z'  => [new DateTimeImmutable('2011-03-14T08:40:47+00:00'), '2011-03-14T08:40:47Z'],
+            'explicit UTC timezone'         => [new DateTimeImmutable('2011-03-14T08:40:47', new \DateTimeZone('UTC')), '2011-03-14T08:40:47Z'],
+            'non-UTC normalised to UTC'     => [new DateTimeImmutable('2011-03-14T11:40:47+03:00'), '2011-03-14T08:40:47Z'],
+            'postgres-style string'         => [new DateTimeImmutable('2011-03-14 08:40:47', new \DateTimeZone('UTC')), '2011-03-14T08:40:47Z'],
+        ];
     }
 
     public function testDeserialization(): void
@@ -177,9 +200,18 @@ class DomainSerializerTest extends TestCase
 
     private function addRemarks(Domain $domain): void
     {
-        $domain->addRemark(new Notice('tittle1', 'type1', ['description1']));
-        $domain->addRemark(new Notice('tittle2', 'type2', ['description2']));
-        $domain->addRemark(new Notice('tittle3', 'type3', ['description3']));
+        $domain->addRemark(
+            (new Notice('tittle1', ['description1']))
+            ->setType('type1')
+        );
+        $domain->addRemark(
+            (new Notice('tittle2', ['description2']))
+            ->setType('type2')
+        );
+        $domain->addRemark(
+            (new Notice('tittle3', ['description3']))
+            ->setType('type3')
+        );
     }
 
     private function addEntities(Domain $domain): void
@@ -194,12 +226,12 @@ class DomainSerializerTest extends TestCase
         $entity2 = clone $entity1;
         $entity1->addEntity($entity2);
 
-        $vcard = new VCard();
-        $vcard->addEmail('text@example.com');
-        $vcard->addPhoneNumber('+380931234567');
-        $vcard->addName('Doe', 'John');
-        $vcard->addCompany('Acme Inc');
-//        $vcard->add
+        $vcard = (new VCard())
+            ->setEmail('text@example.com', ['type' => 'INTERNET'])
+            ->setTel('+380931234567')
+            ->setFullName('John Doe')
+            ->setCompany('Acme Inc')
+            ;
 
         $entity1->addVcard($vcard);
         $domain->addEntity($entity1);
