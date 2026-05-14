@@ -88,8 +88,8 @@ final class Event
     /**
      * @return Link[]
      */
-    public function getLinks(): ?array
+    public function getLinks(): array
     {
-        return $this->links ?? null;
+        return $this->links ?? [];
     }
 }
