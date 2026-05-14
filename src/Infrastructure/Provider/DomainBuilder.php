@@ -31,10 +31,18 @@ final class DomainBuilder implements DomainBuilderInterface
     /** @var string[] */
     private $rdapConformance;
 
-    public function __construct(string $whoisUrl, array $rdapConformance)
+    /** @var string */
+    private $rdapUrl;
+
+    /** @var array */
+    private $noticesConfig;
+
+    public function __construct(string $whoisUrl, array $rdapConformance, string $rdapUrl, array $noticesConfig)
     {
-        $this->whoisUrl        = $whoisUrl;
+        $this->whoisUrl      = $whoisUrl;
         $this->rdapConformance = $rdapConformance;
+        $this->rdapUrl       = $rdapUrl;
+        $this->noticesConfig = $noticesConfig;
     }
 
     /**
@@ -51,9 +59,9 @@ final class DomainBuilder implements DomainBuilderInterface
         $domain->setRdapConformance($this->rdapConformance);
         $domain->setHandle($domainData->getHandle());
 
-        $rdapUrl  = getenv('RDAP_URL');
-        $selfLink = new Link($rdapUrl . (string)$domainName);
-        $selfLink->setValue($rdapUrl . (string)$domainName);
+        $domainUrl = $this->rdapUrl . (string)$domainName;
+        $selfLink  = new Link($domainUrl);
+        $selfLink->setValue($domainUrl);
         $selfLink->setType('application/rdap+json');
         $selfLink->setRel('self');
         $domain->addLink($selfLink);
@@ -93,9 +101,7 @@ final class DomainBuilder implements DomainBuilderInterface
         $domain->setLang(getenv('RDAP_LANG') ?: 'en');
         $domain->setRedacted($domainData->isWhoisProtected());
 
-        $this->addTermsNotice($domain);
-        $this->addStatusCodesNotice($domain);
-        $this->addRDDSInaccuracyComplaintFormNotice($domain);
+        $this->addNotices($domain, $domainUrl);
 
         return $domain;
     }
@@ -200,39 +206,15 @@ final class DomainBuilder implements DomainBuilderInterface
         return new SecureDNS(true, true, null, $dsData);
     }
 
-    private function addTermsNotice(Domain $domain): void
+    private function addNotices(Domain $domain, string $currentUrl): void
     {
-        $link = new Link(getenv('TERMS_OF_USE') ?: '');
-        $link->setType('text/html');
-        $link->setValue(getenv('RDAP_URL') . (string)$domain->getLdhName());
-        $link->setRel('terms-of-service');
-        $domain->addNotice(new Notice('Terms of Service', ['Service subject to Terms of Use.'], [$link]));
-    }
-
-    private function addStatusCodesNotice(Domain $domain): void
-    {
-        $link = new Link('https://icann.org/epp');
-        $link->setType('text/html');
-        $link->setValue(getenv('RDAP_URL') . (string)$domain->getLdhName());
-        $link->setRel('glossary');
-        $domain->addNotice(new Notice(
-            'Status Codes',
-            ['For more information on domain status codes, please visit https://icann.org/epp'],
-            [$link]
-        ));
-    }
-
-    private function addRDDSInaccuracyComplaintFormNotice(Domain $domain): void
-    {
-        $link = new Link('https://icann.org/wicf');
-        $link->setType('text/html');
-        $link->setValue(getenv('RDAP_URL') . (string)$domain->getLdhName());
-        $link->setRel('help');
-        $domain->addNotice(new Notice(
-            'RDDS Inaccuracy Complaint Form',
-            ['URL of the ICANN RDDS Inaccuracy Complaint Form: https://icann.org/wicf'],
-            [$link]
-        ));
+        foreach ($this->noticesConfig as $config) {
+            $link = new Link($config['link']['href']);
+            $link->setType('text/html');
+            $link->setValue($currentUrl);
+            $link->setRel($config['link']['rel']);
+            $domain->addNotice(new Notice($config['title'], [$config['description']], [$link]));
+        }
     }
 
     private function date(string $value): DateTimeImmutable
