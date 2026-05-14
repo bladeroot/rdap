@@ -25,12 +25,12 @@ final class DomainProvider implements DomainProviderInterface
     {
         $name       = (string)$domainName;
         $domainData = $this->repository->findDomainByName($name);
+        $contacts   = $this->repository->findContactsByDomainName($name);
 
-        $contactsData  = $this->repository->findContactsByDomainName($name);
-        $secureDnsData = !empty($domainData['delegationsigned'])
+        $secureDnsData = $domainData->isDelegationSigned()
             ? $this->repository->findSecDnsByDomainName($name)
             : null;
 
-        return $this->builder->build($domainName, $domainData, $contactsData, $secureDnsData);
+        return $this->builder->build($domainName, $domainData, $contacts, $secureDnsData);
     }
 }

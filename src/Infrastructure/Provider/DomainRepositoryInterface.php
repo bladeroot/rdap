@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace hiqdev\rdap\core\Infrastructure\Provider;
 
+use hiqdev\rdap\core\Infrastructure\DTO\ContactData;
+use hiqdev\rdap\core\Infrastructure\DTO\DnsSecData;
+use hiqdev\rdap\core\Infrastructure\DTO\DomainData;
+use hiqdev\rdap\core\Infrastructure\Exception\ObjectNotAvailableException;
+
 interface DomainRepositoryInterface
 {
-    /** Returns a flat associative array of domain-level fields. */
-    public function findDomainByName(string $name): array;
+    /** @throws ObjectNotAvailableException if domain was not found */
+    public function findDomainByName(string $name): DomainData;
 
-    /** Returns an array of contact rows with role and contact data. */
+    /** @return ContactData[] */
     public function findContactsByDomainName(string $name): array;
 
-    /**
-     * Returns an array of DNSSEC dsData rows, or null when the domain
-     * is not delegation-signed and no query should be made.
-     */
+    /** @return DnsSecData[] */
     public function findSecDnsByDomainName(string $name): array;
 }

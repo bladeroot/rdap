@@ -6,21 +6,20 @@ namespace hiqdev\rdap\core\Infrastructure\Provider;
 
 use hiqdev\rdap\core\Domain\Entity\Domain;
 use hiqdev\rdap\core\Domain\ValueObject\DomainName;
+use hiqdev\rdap\core\Infrastructure\DTO\ContactData;
+use hiqdev\rdap\core\Infrastructure\DTO\DnsSecData;
+use hiqdev\rdap\core\Infrastructure\DTO\DomainData;
 
 interface DomainBuilderInterface
 {
     /**
-     * Assembles a fully populated Domain from raw data arrays.
-     *
-     * @param DomainName $domainName
-     * @param array      $domainData    Row returned by DomainRepositoryInterface::findDomainByName()
-     * @param array      $contactsData  Rows returned by DomainRepositoryInterface::findContactsByDomainId()
-     * @param array|null $secureDnsData Rows returned by DomainRepositoryInterface::findSecDnsByDomainId(), or null
+     * @param ContactData[] $contacts
+     * @param DnsSecData[]|null $secureDnsData
      */
     public function build(
         DomainName $domainName,
-        array $domainData,
-        array $contactsData,
+        DomainData $domainData,
+        array $contacts,
         ?array $secureDnsData
     ): Domain;
 }
