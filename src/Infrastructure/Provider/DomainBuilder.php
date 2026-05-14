@@ -50,9 +50,10 @@ final class DomainBuilder implements DomainBuilderInterface
         $selfLink->setRel('self');
         $domain->addLink($selfLink);
 
-        if ($secureDnsData !== null) {
-            $domain->setSecureDNS($this->secureDnsBuilder->build($secureDnsData));
-        }
+        $domain->setSecureDNS($this->secureDnsBuilder->build(
+            $secureDnsData ?? [],
+            $domainData->isDelegationSigned(),
+        ));
 
         foreach ($this->contactBuilder->build($contacts) as $entity) {
             $domain->addEntity($entity);
@@ -60,7 +61,9 @@ final class DomainBuilder implements DomainBuilderInterface
         $domain->addEntity($this->registrarBuilder->build());
 
         $domain->addEvent(Event::occurred(EventAction::REGISTRATION,                 $domainData->getCreationDate()));
-        $domain->addEvent(Event::occurred(EventAction::LAST_CHANGED,                 $domainData->getUpdatedDate()));
+        if ($domainData->getUpdatedDate() != $domainData->getCreationDate()) {
+            $domain->addEvent(Event::occurred(EventAction::LAST_CHANGED,             $domainData->getUpdatedDate()));
+        }
         $domain->addEvent(Event::occurred(EventAction::REGISTRAR_EXPIRATION,         $domainData->getRegistrarExpiration()));
         $domain->addEvent(Event::occurred(EventAction::EXPIRATION,                   $domainData->getExpiration()));
         $domain->addEvent(Event::occurred(EventAction::LAST_UPDATE_OF_RDAP_DATABASE, new DateTimeImmutable()));

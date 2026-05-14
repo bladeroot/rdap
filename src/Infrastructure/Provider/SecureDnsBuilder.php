@@ -12,7 +12,7 @@ final class SecureDnsBuilder implements SecureDnsBuilderInterface
     /**
      * @param DnsSecData[] $dsRows
      */
-    public function build(array $dsRows): SecureDNS
+    public function build(array $dsRows, bool $delegationSigned): SecureDNS
     {
         $dsData = [];
         foreach ($dsRows as $row) {
@@ -24,6 +24,11 @@ final class SecureDnsBuilder implements SecureDnsBuilderInterface
             ];
         }
 
-        return new SecureDNS(true, true, null, $dsData);
+        return new SecureDNS(
+            $delegationSigned ?: null,
+            $delegationSigned,
+            null,
+            $dsData ?: null,
+        );
     }
 }

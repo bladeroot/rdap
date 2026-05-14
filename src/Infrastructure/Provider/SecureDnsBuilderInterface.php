@@ -12,5 +12,5 @@ interface SecureDnsBuilderInterface
     /**
      * @param DnsSecData[] $dsRows
      */
-    public function build(array $dsRows): SecureDNS;
+    public function build(array $dsRows, bool $delegationSigned): SecureDNS;
 }
