@@ -38,9 +38,9 @@ class Nameserver extends Common
 
     public function __construct(
         DomainName $ldhName,
-        IpAddresses $ipAddresses = null
+        ?IpAddresses $ipAddresses = null
     ) {
-        parent::__construct(ObjectClassName::NAMESERVER());
+        parent::__construct(ObjectClassName::NAMESERVER);
 
         $this->ldhName = $ldhName->toLDH();
         $this->ipAddresses = $ipAddresses;

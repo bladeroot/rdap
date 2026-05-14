@@ -1,6 +1,6 @@
 <?php
 /**
- * Registration Data Access Protocol – core objects implementation package according to the RFC 7483
+ * Registration Data Access Protocol – core objects implementation package according to the RFC 7483
  *
  * @link      https://github.com/hiqdev/rdap
  * @package   rdap
@@ -16,7 +16,6 @@ use hiqdev\rdap\core\Domain\Constant\Role;
 use hiqdev\rdap\core\Domain\Entity\Entity;
 use hiqdev\rdap\core\Domain\ValueObject\Event;
 use hiqdev\rdap\core\Domain\ValueObject\PublicId;
-use JeroenDesloovere\VCard\VCard as JeroenDesloovereVCard;
 use hiqdev\rdap\core\Domain\Entity\VCard;
 use PHPUnit\Framework\TestCase;
 
@@ -59,8 +58,8 @@ class EntityTest extends TestCase
 
     public function testRoles(): void
     {
-        $role1 = Role::REGISTRANT();
-        $role2 = Role::RESELLER();
+        $role1 = Role::REGISTRANT;
+        $role2 = Role::RESELLER;
         $entity = new Entity();
         $entity->addRole($role1);
         $entity->addRole($role2);
@@ -79,9 +78,9 @@ class EntityTest extends TestCase
 
     public function testAsEventActor(): void
     {
-        $event1 = Event::occurred(EventAction::REGISTRATION(), new DateTimeImmutable());
+        $event1 = Event::occurred(EventAction::REGISTRATION, new DateTimeImmutable());
         $event1->setEventActor('actor1');
-        $event2 = Event::occurred(EventAction::LAST_CHANGED(), new DateTimeImmutable());
+        $event2 = Event::occurred(EventAction::LAST_CHANGED, new DateTimeImmutable());
         $event2->setEventActor('actor2');
         $entity = new Entity();
         $entity->addAsEventActor($event1);

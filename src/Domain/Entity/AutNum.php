@@ -51,7 +51,7 @@ final class AutNum extends Common
      */
     public function __construct()
     {
-        parent::__construct(ObjectClassName::AUTNUM());
+        parent::__construct(ObjectClassName::AUTNUM);
     }
 
     /**

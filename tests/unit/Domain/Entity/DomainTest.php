@@ -80,7 +80,7 @@ class DomainTest extends TestCase
     {
         $domain = new Domain(DomainName::of('example.com'));
         $eventArr = [
-            Event::occurred(EventAction::LAST_CHANGED(), new \DateTimeImmutable()),
+            Event::occurred(EventAction::LAST_CHANGED, new \DateTimeImmutable()),
         ];
         $linkArr = [
             new Link('scheme'),
@@ -100,9 +100,9 @@ class DomainTest extends TestCase
     {
         $domain = new Domain(DomainName::of('example.com'));
         $entity1 = new Entity();
-        $entity1->addStatus(Status::OK());
+        $entity1->addStatus(Status::OK);
         $entity2 = new Entity();
-        $entity2->addStatus(Status::LOCKED());
+        $entity2->addStatus(Status::LOCKED);
         $domain->addEntity($entity1);
         $domain->addEntity($entity2);
         $this->assertSame([$entity1, $entity2], $domain->getEntities());
@@ -150,14 +150,14 @@ class DomainTest extends TestCase
     public function testDefaultRedactedRulesOnlyRegistrantAndTech(): void
     {
         $entity = new Entity();
-        $entity->addRole(Role::byName('REGISTRANT'));
-        $entity->addRole(Role::byName('ADMINISTRATIVE'));
-        $entity->addRole(Role::byName('TECHNICAL'));
-        $entity->addRole(Role::byName('BILLING'));
+        $entity->addRole(Role::fromName('REGISTRANT'));
+        $entity->addRole(Role::fromName('ADMINISTRATIVE'));
+        $entity->addRole(Role::fromName('TECHNICAL'));
+        $entity->addRole(Role::fromName('BILLING'));
 
         $withHandle = new Entity();
         $withHandle->setHandle('REG-001');
-        $withHandle->addRole(Role::byName('REGISTRANT'));
+        $withHandle->addRole(Role::fromName('REGISTRANT'));
 
         $domain = new Domain(DomainName::of('example.com'));
         $domain->addEntity($entity);
@@ -173,14 +173,14 @@ class DomainTest extends TestCase
         $this->assertNotContains('Registry Billing ID', $types);
 
         foreach ($redacted as $entry) {
-            $this->assertRegExp('/\.roles\[\d+\]==/', $entry['prePath']);
+            $this->assertMatchesRegularExpression('/\.roles\[\d+\]==/', $entry['prePath']);
         }
     }
 
     public function testWPRedactedRulesRegistrantCompleteSet(): void
     {
         $entity = new Entity();
-        $entity->addRole(Role::byName('REGISTRANT'));
+        $entity->addRole(Role::fromName('REGISTRANT'));
 
         $domain = new Domain(DomainName::of('example.com'));
         $domain->addEntity($entity);
@@ -237,7 +237,7 @@ class DomainTest extends TestCase
     public function testWPRedactedRulesTechLimitedSet(): void
     {
         $entity = new Entity();
-        $entity->addRole(Role::byName('TECHNICAL'));
+        $entity->addRole(Role::fromName('TECHNICAL'));
 
         $domain = new Domain(DomainName::of('example.com'));
         $domain->addEntity($entity);
@@ -277,10 +277,10 @@ class DomainTest extends TestCase
     public function testAdminAndBillingProduceNoRedactedEntries(): void
     {
         $admin = new Entity();
-        $admin->addRole(Role::byName('ADMINISTRATIVE'));
+        $admin->addRole(Role::fromName('ADMINISTRATIVE'));
 
         $billing = new Entity();
-        $billing->addRole(Role::byName('BILLING'));
+        $billing->addRole(Role::fromName('BILLING'));
 
         $domain = new Domain(DomainName::of('example.com'));
         $domain->addEntity($admin);
@@ -298,8 +298,8 @@ class DomainTest extends TestCase
         // role indices so @.roles[0]=='registrant' and @.roles[1]=='technical'
         // both correctly resolve to the same merged entity.
         $merged = new Entity();
-        $merged->addRole(Role::byName('REGISTRANT'));
-        $merged->addRole(Role::byName('TECHNICAL'));
+        $merged->addRole(Role::fromName('REGISTRANT'));
+        $merged->addRole(Role::fromName('TECHNICAL'));
 
         $domain = new Domain(DomainName::of('example.com'));
         $domain->addEntity($merged);
@@ -317,18 +317,17 @@ class DomainTest extends TestCase
         foreach ($domain->getRedacted() as $r) {
             $byType[$r['name']['type']] = $r;
         }
-        $this->assertRegExp("/@\.roles\[0\]=='registrant'/", $byType['Registrant Name']['postPath']);
-        $this->assertRegExp("/@\.roles\[1\]=='technical'/", $byType['Tech Name']['postPath']);
+        $this->assertMatchesRegularExpression("/@\.roles\[0\]=='registrant'/", $byType['Registrant Name']['postPath']);
+        $this->assertMatchesRegularExpression("/@\.roles\[1\]=='technical'/", $byType['Tech Name']['postPath']);
     }
 
     public function testRdapConformance(): void
     {
         $domain = new Domain(DomainName::of('example.com'));
-        $this->assertSame([
-            'rdap_level_0',
-            'icann_rdap_technical_implementation_guide_1',
-            'icann_rdap_response_profile_1',
-            'redacted'
-        ], $domain->getRdapConformance());
+        $this->assertSame(['rdap_level_0'], $domain->getRdapConformance());
+
+        $full = ['rdap_level_0', 'icann_rdap_technical_implementation_guide_1', 'icann_rdap_response_profile_1', 'redacted'];
+        $domain->setRdapConformance($full);
+        $this->assertSame($full, $domain->getRdapConformance());
     }
 }

@@ -62,14 +62,14 @@ class DomainSerializerTest extends TestCase
     public function testEventDateSerializedWithZSuffix(DateTimeImmutable $date, string $expectedDate): void
     {
         $domain = new Domain(DomainName::of('example.com'));
-        $domain->addEvent(Event::occurred(EventAction::REGISTRATION(), $date));
+        $domain->addEvent(Event::occurred(EventAction::REGISTRATION, $date));
 
         $json = json_decode($this->getSerializer()->serialize($domain), true);
 
         $this->assertSame($expectedDate, $json['events'][0]['eventDate']);
     }
 
-    public function eventDateProvider(): array
+    public static function eventDateProvider(): array
     {
         return [
             'UTC offset +00:00 becomes Z'  => [new DateTimeImmutable('2011-03-14T08:40:47+00:00'), '2011-03-14T08:40:47Z'],
@@ -94,6 +94,12 @@ class DomainSerializerTest extends TestCase
 
     private function fillDomainWithTestData(Domain $domain): void
     {
+        $domain->setRdapConformance([
+            'rdap_level_0',
+            'icann_rdap_technical_implementation_guide_1',
+            'icann_rdap_response_profile_1',
+            'redacted',
+        ]);
         $this->setHandle($domain);
         $this->addNameservers($domain);
         $this->addVariants($domain);
@@ -125,8 +131,8 @@ class DomainSerializerTest extends TestCase
     private function addVariants(Domain $domain): void
     {
         $relations = [
-            Relation::REGISTERED(),
-            Relation::UNREGISTERED(),
+            Relation::REGISTERED,
+            Relation::UNREGISTERED,
         ];
         $domain->addVariant(new Variant($relations, 'idnTable1'));
         $domain->addVariant(new Variant($relations, 'idnTable2'));
@@ -135,7 +141,7 @@ class DomainSerializerTest extends TestCase
     private function setSecureDNS(Domain $domain): void
     {
         $eventArr = [
-            Event::occurred(EventAction::DELETION(), new DateTimeImmutable('2019-08-01 11:12:13')),
+            Event::occurred(EventAction::DELETION, new DateTimeImmutable('2019-08-01 11:12:13')),
         ];
         $linkArr = [
             new Link('scheme'),
@@ -152,7 +158,7 @@ class DomainSerializerTest extends TestCase
     private function setNetwork(Domain $domain): void
     {
         $ipNetwork = new IPNetwork();
-        $ipNetwork->addStatus(Status::OK());
+        $ipNetwork->addStatus(Status::OK);
         $domain->setNetwork($ipNetwork);
     }
 
@@ -170,15 +176,15 @@ class DomainSerializerTest extends TestCase
 
     private function addStatuses(Domain $domain): void
     {
-        $domain->addStatus(Status::OK());
-        $domain->addStatus(Status::LOCKED());
+        $domain->addStatus(Status::OK);
+        $domain->addStatus(Status::LOCKED);
     }
 
     private function addEvents(Domain $domain): void
     {
-        $domain->addEvent(Event::occurred(EventAction::DELETION(), new DateTimeImmutable('2019-08-01 00:00:01')));
-        $domain->addEvent(Event::occurred(EventAction::DELETION(), new DateTimeImmutable('2019-08-01 00:00:01')));
-        $domain->addEvent(Event::occurred(EventAction::DELETION(), new DateTimeImmutable('2019-08-01 00:00:01')));
+        $domain->addEvent(Event::occurred(EventAction::DELETION, new DateTimeImmutable('2019-08-01 00:00:01')));
+        $domain->addEvent(Event::occurred(EventAction::DELETION, new DateTimeImmutable('2019-08-01 00:00:01')));
+        $domain->addEvent(Event::occurred(EventAction::DELETION, new DateTimeImmutable('2019-08-01 00:00:01')));
     }
 
     private function setPort43(Domain $domain): void
@@ -217,11 +223,11 @@ class DomainSerializerTest extends TestCase
     private function addEntities(Domain $domain): void
     {
         $entity1 = new Entity();
-        $entity1->addStatus(Status::OK());
+        $entity1->addStatus(Status::OK);
         $entity1->setHandle('handle');
         $entity1->addPublicId(new PublicId('type', 'identifier'));
-        $entity1->addRole(Role::RESELLER());
-        $entity1->addAsEventActor(Event::occurred(EventAction::UNLOCKED(), new DateTimeImmutable('2019-07-03 11:12:15')));
+        $entity1->addRole(Role::RESELLER);
+        $entity1->addAsEventActor(Event::occurred(EventAction::UNLOCKED, new DateTimeImmutable('2019-07-03 11:12:15')));
 
         $entity2 = clone $entity1;
         $entity1->addEntity($entity2);

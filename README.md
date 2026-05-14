@@ -1,79 +1,135 @@
-# Registration Data Access Protocol – core objects implementation package according to the RFC 7483
+# hiqdev/rdap
 
-[![Latest Stable Version](https://poser.pugx.org/hiqdev/rdap/v/stable)](https://packagist.org/packages/hiqdev/rdap)
-[![Total Downloads](https://poser.pugx.org/hiqdev/rdap/downloads)](https://packagist.org/packages/hiqdev/rdap)
-[![Build Status](https://img.shields.io/travis/hiqdev/rdap.svg)](https://travis-ci.org/hiqdev/rdap)
-[![Scrutinizer Code Coverage](https://img.shields.io/scrutinizer/coverage/g/hiqdev/rdap.svg)](https://scrutinizer-ci.com/g/hiqdev/rdap/)
-[![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/hiqdev/rdap.svg)](https://scrutinizer-ci.com/g/hiqdev/rdap/)
+PHP library implementing core RDAP objects, serialization, and provider interfaces according to [RFC 7483](https://tools.ietf.org/html/rfc7483) / [RFC 9083](https://tools.ietf.org/html/rfc9083).
 
-## RDAP server library
+## Requirements
 
-This PHP library makes it very easy to build an RDAP server that talks with your registry back-end.
-
-# Features
-* Include this library in your PHP web application to significantly ease implementing an RDAP server and client
-* Can be combined with any back-end by simply implementing one or more methods
-* All you need to do is retrieve the data and populate some PHP objects
+- PHP 8.1+
+- `symfony/serializer`
 
 ## Installation
 
-The preferred way to install this project is through [composer](http://getcomposer.org/download/).
-
-```sh
-php composer.phar require hiqdev/rdap:dev-master
+```bash
+composer require hiqdev/rdap:dev-master
 ```
 
-or add
+## Architecture
 
-```
-"hiqdev/rdap": "dev-master"
-```
-to the require section of your composer.json.
+The library is split into two layers:
 
-# Details
+**`Domain/`** — pure protocol objects with no external dependencies:
 
-This library understands and supports the following RFC's:
+| Namespace | Contents |
+|---|---|
+| `Domain/Entity` | `Domain`, `Entity`, `Nameserver`, `AutNum`, `IPNetwork`, `VCard` |
+| `Domain/ValueObject` | `DomainName`, `Event`, `Link`, `Notice`, `SecureDNS`, `IpAddresses`, … |
+| `Domain/Constant` | Native PHP 8.1 enums: `Role`, `Status`, `EventAction`, `ObjectClassName` |
 
-* [RFC-7480 : HTTP Usage in the Registration Data Access Protocol (RDAP)](http://tools.ietf.org/html/rfc7480)
-* [RFC-7481 : Security Services for the Registration Data Access Protocol (RDAP)](http://tools.ietf.org/html/rfc7481)
-* [RFC-7482 : Registration Data Access Protocol (RDAP) Query Format](http://tools.ietf.org/html/rfc7482)
-* [RFC-7483 : JSON Responses for the Registration Data Access Protocol (RDAP)](http://tools.ietf.org/html/rfc7483)
-* [RFC-7484 : Finding the Authoritative Registration Data (RDAP) Service](http://tools.ietf.org/html/rfc7484)
+**`Infrastructure/`** — interfaces and default implementations for building RDAP responses:
 
-# How it works
+| Namespace | Contents |
+|---|---|
+| `Infrastructure/Provider` | Builder interfaces and implementations (see below) |
+| `Infrastructure/Storage` | `DomainInfoStorageInterface` |
+| `Infrastructure/DTO` | `DomainData`, `ContactData`, `DnsSecData` |
+| `Infrastructure/Query` | `DomainNamesQuery` |
+| `Infrastructure/Serialization` | `SerializerInterface`, Symfony implementation |
 
-* The library contains a number of PHP objects representing the data structures defined in rfc7483
-* You need to write the code to populate these objects whenever a query comes in
+## Builders
 
-# How to use
+`DomainBuilder` assembles a `Domain` object from raw DTOs. It delegates to four focused sub-builders, each with its own interface:
 
-We have created a sample project which could help you with your implementation. You can find both the source and instructions in the following project: [rdap-server-example](https://github.com/hiqdev/rdap-server-example)
+| Interface | Default implementation | Responsibility |
+|---|---|---|
+| `ContactBuilderInterface` | `ContactBuilder` | Builds `Entity[]` with `VCard` from `ContactData[]` |
+| `RegistrarBuilderInterface` | `RegistrarBuilder` | Builds the registrar + abuse `Entity` from env vars |
+| `NoticeBuilderInterface` | `NoticeBuilder` | Builds `Notice[]` with `Link` from a config array |
+| `SecureDnsBuilderInterface` | `SecureDnsBuilder` | Builds a `SecureDNS` object from `DnsSecData[]` |
 
-## Simple usage:
-    
-    use hiqdev\rdap\core\Infrastructure\Provider\DomainProviderInterface;
-    use hiqdev\rdap\core\Domain\Constant\Role;
-    use hiqdev\rdap\core\Domain\Entity\Domain;
-    use hiqdev\rdap\core\Domain\ValueObject\DomainName;
+All four interfaces are injected into `DomainBuilder` via constructor, so any implementation can be swapped through DI.
 
-    class DomainProvider implements DomainProviderInterface
+### Implementing a custom builder
+
+```php
+use hiqdev\rdap\core\Infrastructure\Provider\RegistrarBuilderInterface;
+use hiqdev\rdap\core\Domain\Entity\Entity;
+
+final class MyRegistrarBuilder implements RegistrarBuilderInterface
+{
+    public function build(): Entity
     {
-        /** @var object */
-        private $domainInfo;
-        
-        public function get(DomainName $domainName): Domain
-        {
-            $domain = new Domain(DomainName::of($this->domainInfo->domainName));
-            $domain->setPort43(DomainName::of($this->domainInfo->rdapServer));
-            $domain->addEntity($this->domainInfo->getEntity(Role::REGISTRANT()));
-            
-            return $domain;
-        }
+        $entity = new Entity();
+        // populate from your own source
+        return $entity;
     }
+}
+```
+
+## Domain repository interfaces
+
+To feed data into `DomainProvider`, implement the three repository interfaces:
+
+| Interface | Method | Returns |
+|---|---|---|
+| `DomainRepositoryInterface` | `findDomainByName(string)` | `DomainData` |
+| `DomainNamesRepositoryInterface` | `getDomainNames(DomainNamesQuery)` | `iterable<DomainName>` |
+| `UpdateDomainInterface` | `setSuccessUpdateStatus(string)` | `void` |
+
+## Storage interface
+
+`DomainInfoStorageInterface` abstracts where serialized RDAP JSON is kept:
+
+```php
+interface DomainInfoStorageInterface
+{
+    public function save(string $domainName, string $json): void;
+    public function find(string $domainName): ?string;
+    public function delete(string $domainName): void;
+    public function removeNotUpdatedSince(\DateTimeImmutable $threshold): void;
+}
+```
+
+## DTOs
+
+### `DomainData`
+
+Constructed with raw strings from the database. Date fields are converted to `DateTimeImmutable` (UTC) internally:
+
+```php
+$data = new DomainData(
+    handle: 'ABC123',
+    statuses: 'clientTransferProhibited,serverHold',
+    nameservers: 'ns1.example.com,ns2.example.com',
+    creationDate: '2010-01-15 12:00:00',
+    updatedDate: '2024-06-01 08:30:00',
+    registrarExpiration: '2025-01-15 00:00:00',
+    expiration: '2025-01-15 00:00:00',
+    whoisProtected: false,
+    delegationSigned: true,
+);
+
+$data->getCreationDate(); // DateTimeImmutable (UTC)
+```
+
+### `ContactData`
+
+Holds registrant/admin/tech contact fields. `isWhoisProtected()` signals that personal data should be redacted in the RDAP response.
+
+## Serialization
+
+`SymfonySerializer` converts a `Domain` entity to RDAP-compliant JSON. Dates are serialized with a `Z` suffix (UTC).
+
+```php
+$serializer = new SymfonySerializer();
+$json = $serializer->serialize($domain); // RFC 9083 JSON string
+```
+
+## Running tests
+
+```bash
+php vendor/bin/phpunit
+```
 
 ## License
 
-This project is released under the terms of the BSD-3-Clause [license](LICENSE).
-Read more [here](http://choosealicense.com/licenses/bsd-3-clause).
-
-Copyright © 2019, HiQDev (http://hiqdev.com/)
+BSD-3-Clause. Copyright © HiQDev.

@@ -17,7 +17,7 @@ class AutnumTest extends TestCase
 {
     public function testHandle(): void
     {
-        $autnum = new Autnum();
+        $autnum = new AutNum();
         $handle = 'handle';
         $autnum->setHandle($handle);
         $this->assertSame($handle, $autnum->getHandle());
@@ -25,7 +25,7 @@ class AutnumTest extends TestCase
 
     public function testCountry(): void
     {
-        $autnum = new Autnum();
+        $autnum = new AutNum();
         $country = 'country';
         $autnum->setCountry($country);
         $this->assertSame($country, $autnum->getCountry());
@@ -35,7 +35,7 @@ class AutnumTest extends TestCase
     {
         $startAutnum = 10;
         $endAutnum = 20;
-        $autnum = new Autnum();
+        $autnum = new AutNum();
         $autnum->setStartAutnum($startAutnum);
         $this->assertSame($startAutnum, $autnum->getStartAutnum());
         $autnum->setEndAutnum($endAutnum);
@@ -46,7 +46,7 @@ class AutnumTest extends TestCase
     {
         $type = 'type';
         $name = 'name';
-        $autnum = new Autnum();
+        $autnum = new AutNum();
         $autnum->setType($type);
         $this->assertSame($type, $autnum->getType());
         $autnum->setName($name);

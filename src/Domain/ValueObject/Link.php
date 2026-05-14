@@ -84,9 +84,9 @@ final class Link
     /**
      * @return string
      */
-    public function getType(): string
+    public function getType(): ?string
     {
-        return $this->type ?? 'text/html';
+        return $this->type ?? null;
     }
 
     /**
