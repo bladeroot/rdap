@@ -9,7 +9,7 @@ use hiqdev\rdap\core\Domain\Entity\Entity;
 use hiqdev\rdap\core\Domain\Entity\VCard;
 use hiqdev\rdap\core\Infrastructure\DTO\ContactData;
 
-final class ContactBuilder
+final class ContactBuilder implements ContactBuilderInterface
 {
     /**
      * @param ContactData[] $contacts

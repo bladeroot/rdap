@@ -7,7 +7,7 @@ namespace hiqdev\rdap\core\Infrastructure\Provider;
 use hiqdev\rdap\core\Domain\ValueObject\SecureDNS;
 use hiqdev\rdap\core\Infrastructure\DTO\DnsSecData;
 
-final class SecureDnsBuilder
+final class SecureDnsBuilder implements SecureDnsBuilderInterface
 {
     /**
      * @param DnsSecData[] $dsRows

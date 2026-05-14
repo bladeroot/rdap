@@ -10,7 +10,7 @@ use hiqdev\rdap\core\Domain\Entity\VCard;
 use hiqdev\rdap\core\Domain\ValueObject\Link;
 use hiqdev\rdap\core\Domain\ValueObject\PublicId;
 
-final class RegistrarBuilder
+final class RegistrarBuilder implements RegistrarBuilderInterface
 {
     public function build(): Entity
     {

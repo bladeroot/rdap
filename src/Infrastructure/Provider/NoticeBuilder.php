@@ -7,7 +7,7 @@ namespace hiqdev\rdap\core\Infrastructure\Provider;
 use hiqdev\rdap\core\Domain\ValueObject\Link;
 use hiqdev\rdap\core\Domain\ValueObject\Notice;
 
-final class NoticeBuilder
+final class NoticeBuilder implements NoticeBuilderInterface
 {
     public function __construct(private array $noticesConfig)
     {

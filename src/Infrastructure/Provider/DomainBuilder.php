@@ -18,21 +18,15 @@ use hiqdev\rdap\core\Infrastructure\DTO\DomainData;
 
 final class DomainBuilder implements DomainBuilderInterface
 {
-    private ContactBuilder $contactBuilder;
-    private RegistrarBuilder $registrarBuilder;
-    private NoticeBuilder $noticeBuilder;
-    private SecureDnsBuilder $secureDnsBuilder;
-
     public function __construct(
         private string $whoisUrl,
         private array $rdapConformance,
         private string $rdapUrl,
-        array $noticesConfig
+        private ContactBuilderInterface $contactBuilder,
+        private RegistrarBuilderInterface $registrarBuilder,
+        private NoticeBuilderInterface $noticeBuilder,
+        private SecureDnsBuilderInterface $secureDnsBuilder,
     ) {
-        $this->contactBuilder   = new ContactBuilder();
-        $this->registrarBuilder = new RegistrarBuilder();
-        $this->noticeBuilder    = new NoticeBuilder($noticesConfig);
-        $this->secureDnsBuilder = new SecureDnsBuilder();
     }
 
     /**
