@@ -72,7 +72,7 @@ final class Entity extends Common
 
     public function __construct()
     {
-        parent::__construct(ObjectClassName::ENTITY());
+        parent::__construct(ObjectClassName::ENTITY);
     }
 
     /**

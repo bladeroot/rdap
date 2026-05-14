@@ -60,7 +60,7 @@ class IPNetwork extends Common
      */
     public function __construct()
     {
-        parent::__construct(ObjectClassName::IPNETWORK());
+        parent::__construct(ObjectClassName::IPNETWORK);
     }
 
     /**

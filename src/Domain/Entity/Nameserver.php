@@ -40,7 +40,7 @@ class Nameserver extends Common
         DomainName $ldhName,
         IpAddresses $ipAddresses = null
     ) {
-        parent::__construct(ObjectClassName::NAMESERVER());
+        parent::__construct(ObjectClassName::NAMESERVER);
 
         $this->ldhName = $ldhName->toLDH();
         $this->ipAddresses = $ipAddresses;

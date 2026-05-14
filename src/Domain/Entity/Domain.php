@@ -66,7 +66,7 @@ final class Domain extends Common
 
     public function __construct(DomainName $ldhName)
     {
-        parent::__construct(ObjectClassName::DOMAIN());
+        parent::__construct(ObjectClassName::DOMAIN);
 
         $this->ldhName = $ldhName->toLDH();
 
