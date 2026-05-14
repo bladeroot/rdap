@@ -1,6 +1,6 @@
 <?php
 /**
- * Registration Data Access Protocol – core objects implementation package according to the RFC 7483
+ * Registration Data Access Protocol – core objects implementation package according to the RFC 7483
  *
  * @link      https://github.com/hiqdev/rdap
  * @package   rdap
@@ -32,9 +32,9 @@ class IPNetworkTest extends TestCase
     {
         $ipNetwork = new IPNetwork();
         $entity1 = new Entity();
-        $entity1->addStatus(Status::OK());
+        $entity1->addStatus(Status::OK);
         $entity2 = new Entity();
-        $entity2->addStatus(Status::LOCKED());
+        $entity2->addStatus(Status::LOCKED);
         $ipNetwork->addEntity($entity1);
         $ipNetwork->addEntity($entity2);
         $this->assertSame([$entity1, $entity2], $ipNetwork->getEntities());

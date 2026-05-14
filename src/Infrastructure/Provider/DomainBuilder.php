@@ -141,9 +141,9 @@ final class DomainBuilder implements DomainBuilderInterface
             ->setAddress(
                 $wp ? '' : $contact->getStreet(),
                 $wp ? '' : $contact->getCity(),
-                $contact->getProvince(),
                 $wp ? '' : $contact->getPostalCode(),
-                $contact->getCountry()
+                $contact->getCountry(),
+                $contact->getProvince()
             );
 
         if (!$wp) {
@@ -164,9 +164,9 @@ final class DomainBuilder implements DomainBuilderInterface
             ->setAddress(
                 getenv('REGISTRAR_STREET') ?: '',
                 getenv('REGISTRAR_CITY') ?: '',
-                getenv('REGISTRAR_PROVINCE') ?: '',
                 getenv('REGISTRAR_ZIP') ?: '',
-                getenv('REGISTRAR_COUNTRY') ?: ''
+                getenv('REGISTRAR_COUNTRY') ?: '',
+                getenv('REGISTRAR_PROVINCE') ?: ''
             )
             ->setUrl(getenv('REGISTRAR_URL') ?: '');
 

@@ -10,7 +10,12 @@
 
 error_reporting(E_ALL & ~E_NOTICE);
 
-$bootstrap = __DIR__ . '/../src/_bootstrap.php';
+// Support running both as standalone package and as vendor dependency
+$autoloader = __DIR__ . '/../vendor/autoload.php';
+if (!file_exists($autoloader)) {
+    $autoloader = __DIR__ . '/../../../autoload.php';
+}
+require_once $autoloader;
 
 require_once __DIR__ . '/unit/Serialization/Symfony/mock/VCardDateMock.php';
 

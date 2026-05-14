@@ -27,7 +27,7 @@ final class VCard implements \JsonSerializable
         $this->vCard = array_merge($this->vCard, $vCard);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return array_values($this->vCard);
     }
@@ -83,9 +83,9 @@ final class VCard implements \JsonSerializable
     public function setAddress(
         string $street,
         string $city,
-        ?string $state = '',
         string $zip,
         ?string $country = null,
+        ?string $state = '',
         string $ext = '',
         string $name = '',
         array $properties = []
