@@ -257,7 +257,7 @@ final class Domain extends Common
                 continue;
             }
             foreach ($v->getRoles() as $roleIndex => $role) {
-                $type = $role->getValue();
+                $type = $role->value;
                 if (!isset($allowedRoles[$type])) {
                     continue;
                 }
@@ -282,7 +282,7 @@ final class Domain extends Common
 
         foreach (($this->getEntities() ?? []) as $v) {
             foreach ($v->getRoles() as $roleIndex => $role) {
-                $type = $role->getValue();
+                $type = $role->value;
 
                 if ($type === 'registrant' && !$seenRegistrant) {
                     $seenRegistrant = true;

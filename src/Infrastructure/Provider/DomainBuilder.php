@@ -62,19 +62,19 @@ final class DomainBuilder implements DomainBuilderInterface
         }
         $domain->addEntity($this->buildRegistrarEntity());
 
-        $domain->addEvent(Event::occurred(EventAction::REGISTRATION(),                 $this->date($domainData->getCreationDate())));
-        $domain->addEvent(Event::occurred(EventAction::LAST_CHANGED(),                 $this->date($domainData->getUpdatedDate())));
-        $domain->addEvent(Event::occurred(EventAction::REGISTRAR_EXPIRATION(),         $this->date($domainData->getRegistrarExpiration())));
-        $domain->addEvent(Event::occurred(EventAction::EXPIRATION(),                   $this->date($domainData->getExpiration())));
-        $domain->addEvent(Event::occurred(EventAction::LAST_UPDATE_OF_RDAP_DATABASE(), new DateTimeImmutable()));
+        $domain->addEvent(Event::occurred(EventAction::REGISTRATION,                 $this->date($domainData->getCreationDate())));
+        $domain->addEvent(Event::occurred(EventAction::LAST_CHANGED,                 $this->date($domainData->getUpdatedDate())));
+        $domain->addEvent(Event::occurred(EventAction::REGISTRAR_EXPIRATION,         $this->date($domainData->getRegistrarExpiration())));
+        $domain->addEvent(Event::occurred(EventAction::EXPIRATION,                   $this->date($domainData->getExpiration())));
+        $domain->addEvent(Event::occurred(EventAction::LAST_UPDATE_OF_RDAP_DATABASE, new DateTimeImmutable()));
 
         $statuses = $domainData->getStatuses();
         if (!empty($statuses)) {
             foreach (explode(',', $statuses) as $status) {
-                $domain->addStatus(Status::byName(strtoupper($status)));
+                $domain->addStatus(Status::fromName(strtoupper($status)));
             }
         } else {
-            $domain->addStatus(Status::OK());
+            $domain->addStatus(Status::OK);
         }
 
         $nameservers = $domainData->getNameservers();
@@ -103,7 +103,7 @@ final class DomainBuilder implements DomainBuilderInterface
 
         foreach ($contacts as $contact) {
             $id = $contact->getId();
-            $rolesByContact[$id][] = Role::byName(strtoupper($contact->getRole()));
+            $rolesByContact[$id][] = Role::fromName(strtoupper($contact->getRole()));
             $vcardByContact[$id]   = $this->buildVCard($contact);
         }
 
@@ -168,12 +168,12 @@ final class DomainBuilder implements DomainBuilderInterface
         $link->setValue(getenv('RDAP_SITE') ?: '');
         $link->setRel('about');
         $entity->addLink($link);
-        $entity->addRole(Role::byName('REGISTRAR'));
+        $entity->addRole(Role::REGISTRAR);
 
         $abuseEntity = new Entity();
         $abuseEntity->addVcard($vcard);
         $abuseEntity->setHandle('ABUSE-' . $ianaId);
-        $abuseEntity->addRole(Role::byName('ABUSE'));
+        $abuseEntity->addRole(Role::ABUSE);
         $entity->addEntity($abuseEntity);
 
         return $entity;
