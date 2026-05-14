@@ -28,9 +28,13 @@ final class DomainBuilder implements DomainBuilderInterface
     /** @var string */
     private $whoisUrl;
 
-    public function __construct(string $whoisUrl)
+    /** @var string[] */
+    private $rdapConformance;
+
+    public function __construct(string $whoisUrl, array $rdapConformance)
     {
-        $this->whoisUrl = $whoisUrl;
+        $this->whoisUrl        = $whoisUrl;
+        $this->rdapConformance = $rdapConformance;
     }
 
     /**
@@ -44,6 +48,7 @@ final class DomainBuilder implements DomainBuilderInterface
         ?array $secureDnsData
     ): Domain {
         $domain = new Domain($domainName);
+        $domain->setRdapConformance($this->rdapConformance);
         $domain->setHandle($domainData->getHandle());
 
         $rdapUrl  = getenv('RDAP_URL');

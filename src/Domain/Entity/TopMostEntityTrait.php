@@ -15,12 +15,7 @@ trait TopMostEntityTrait
      * each providing a hint as to the specifications used in the construction of the response.
      * This data structure appears only in the topmost JSON object of a response.
      */
-    private $rdapConformance = [
-        'rdap_level_0',
-        'icann_rdap_technical_implementation_guide_1',
-        'icann_rdap_response_profile_1',
-        'redacted'
-    ];
+    private $rdapConformance = ['rdap_level_0'];
 
     /**
      * @return string[]
