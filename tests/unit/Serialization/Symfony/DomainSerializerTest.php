@@ -69,7 +69,7 @@ class DomainSerializerTest extends TestCase
         $this->assertSame($expectedDate, $json['events'][0]['eventDate']);
     }
 
-    public function eventDateProvider(): array
+    public static function eventDateProvider(): array
     {
         return [
             'UTC offset +00:00 becomes Z'  => [new DateTimeImmutable('2011-03-14T08:40:47+00:00'), '2011-03-14T08:40:47Z'],
