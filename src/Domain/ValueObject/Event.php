@@ -15,6 +15,11 @@ namespace hiqdev\rdap\core\Domain\ValueObject;
 use DateTimeImmutable;
 use hiqdev\rdap\core\Domain\Constant\EventAction;
 
+/**
+ * RDAP event value object representing a single lifecycle event on a registry object (RFC 9083 §4.5).
+ *
+ * Constructed via Event::occurred(); additional actor and link data may be attached afterwards.
+ */
 final class Event
 {
     /**
@@ -41,11 +46,20 @@ final class Event
         $this->eventDate = $eventDate;
     }
 
+    /**
+     * @param  EventAction        $action The type of event that occurred
+     * @param  DateTimeImmutable  $date   Date and time the event occurred (UTC)
+     * @return self
+     */
     public static function occurred(EventAction $action, DateTimeImmutable $date): self
     {
         return new self($action, $date);
     }
 
+    /**
+     * @param  Link $link Related link to attach to this event
+     * @return self
+     */
     public function addLink(Link $link): self
     {
         $this->links[] = $link;

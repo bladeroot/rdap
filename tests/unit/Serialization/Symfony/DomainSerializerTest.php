@@ -31,16 +31,10 @@ use hiqdev\rdap\core\Domain\ValueObject\PublicId;
 use hiqdev\rdap\core\Domain\ValueObject\SecureDNS;
 use hiqdev\rdap\core\Infrastructure\Serialization\Symfony\SymfonySerializer;
 use hiqdev\rdap\core\Domain\Entity\VCard;
-use JeroenDesloovere\VCard\VCardDateMock;
 use PHPUnit\Framework\TestCase;
 
 class DomainSerializerTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        VCardDateMock::setDate(new DateTimeImmutable('2011-01-10 10:20:30'));
-    }
-
     private function getSerializer(): SymfonySerializer
     {
         return new SymfonySerializer();
@@ -81,15 +75,12 @@ class DomainSerializerTest extends TestCase
 
     public function testDeserialization(): void
     {
-        $this->markTestIncomplete('Deserialization is not implemented yet.');
-        // TODO: implement
-
         $domain = new Domain(DomainName::of('тест.укр'));
         $this->fillDomainWithTestData($domain);
         $serializer = $this->getSerializer();
         $json = $serializer->serialize($domain);
         $deserialized = $serializer->deserialize($json, Domain::class);
-        $this->assertSame($domain, $deserialized);
+        $this->assertJsonStringEqualsJsonString($json, $serializer->serialize($deserialized));
     }
 
     private function fillDomainWithTestData(Domain $domain): void

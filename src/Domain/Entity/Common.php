@@ -19,6 +19,10 @@ use hiqdev\rdap\core\Domain\ValueObject\Event;
 use hiqdev\rdap\core\Domain\ValueObject\Link;
 use hiqdev\rdap\core\Domain\ValueObject\Notice;
 
+/**
+ * Abstract base for all RDAP top-level objects (RFC 9083 §4), providing common fields:
+ * object class name, links, notices, remarks, language, events, port-43 hostname, and status.
+ */
 abstract class Common
 {
 
@@ -63,6 +67,7 @@ abstract class Common
      */
     private $status;
 
+    /** @param ObjectClassName $objectClassName RDAP object class for this entity */
     public function __construct(ObjectClassName $objectClassName)
     {
         $this->objectClassName = $objectClassName;

@@ -15,6 +15,10 @@ use hiqdev\rdap\core\Domain\Constant\Role;
 use hiqdev\rdap\core\Domain\ValueObject\Event;
 use hiqdev\rdap\core\Domain\ValueObject\PublicId;
 
+/**
+ * RDAP entity object as defined by RFC 9083 §5.1, representing a person, organization,
+ * or registry actor with roles, contact information (vCard), and optional public identifiers.
+ */
 final class Entity extends Common
 {
     public const OBJECT_CLASS_NAME = 'entity';
@@ -70,6 +74,7 @@ final class Entity extends Common
      */
     private $entities = [];
 
+    /** Initialises the entity with the ENTITY object class name */
     public function __construct()
     {
         parent::__construct(ObjectClassName::ENTITY);

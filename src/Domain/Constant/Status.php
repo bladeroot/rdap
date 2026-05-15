@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace hiqdev\rdap\core\Domain\Constant;
 
+/** RDAP object status values as defined in RFC 9083 §10.2.2 and the ICANN EPP status mapping. */
 enum Status: string
 {
     case OK                       = 'active';
@@ -41,6 +42,10 @@ enum Status: string
     case CLIENTTRANSFERPROHIBITED = 'client transfer prohibited';
     case CLIENTUPDATEPROHIBITED   = 'client update prohibited';
 
+    /**
+     * @param  string $name Enum case name in UPPER_SNAKE_CASE (e.g. "OK")
+     * @return self
+     */
     public static function fromName(string $name): self
     {
         return constant('self::' . $name);

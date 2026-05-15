@@ -17,6 +17,13 @@ use hiqdev\rdap\core\Domain\ValueObject\Label\Label;
 use hiqdev\rdap\core\Domain\ValueObject\Label\RootLabel;
 use InvalidArgumentException;
 
+/**
+ * Immutable value object representing a DNS domain name as an ordered list of labels.
+ *
+ * Supports conversion between LDH (ACE/punycode) and Unicode (U-label) forms,
+ * FQDN normalisation, and label-level access. Constructed via the static factory
+ * DomainName::of() which parses a dot-separated string into Label instances.
+ */
 final class DomainName
 {
     /**
@@ -45,6 +52,10 @@ final class DomainName
         $this->labels = $labels;
     }
 
+    /**
+     * @param  string $domainName Dot-separated domain name string (e.g. "example.com")
+     * @return self
+     */
     public static function of(string $domainName): self
     {
         $builder = [];
@@ -55,6 +66,7 @@ final class DomainName
         return new DomainName($builder);
     }
 
+    /** @return self A fully-qualified version of this domain name (trailing dot label appended if absent) */
     public function toFQDN(): self
     {
         if ($this->isFQDN()) {
@@ -66,11 +78,13 @@ final class DomainName
         return new DomainName($labels);
     }
 
+    /** @return bool True when the last label is the root label (empty trailing dot) */
     public function isFQDN(): bool
     {
         return $this->labels[count($this->labels) - 1] instanceof RootLabel;
     }
 
+    /** @return int Number of meaningful labels (root label excluded) */
     public function getLevelSize(): int
     {
         return $this->isFQDN() ? count($this->labels) - 1 : count($this->labels);
@@ -84,16 +98,19 @@ final class DomainName
         return $this->labels;
     }
 
+    /** @return Label The top-level domain label (rightmost non-root label) */
     public function getTLDLabel(): Label
     {
         return $this->labels[$this->getLevelSize() - 1];
     }
 
+    /** @return string Dot-joined label string (e.g. "example.com") */
     public function __toString(): string
     {
         return implode('.', $this->labels);
     }
 
+    /** @return self A copy of this domain name with all labels converted to LDH (ASCII-compatible encoding) */
     public function toLDH(): self
     {
         $ldh = array_map(static function (Label $label): Label {
@@ -103,6 +120,7 @@ final class DomainName
         return new DomainName($ldh);
     }
 
+    /** @return self A copy of this domain name with all labels decoded to Unicode (U-label form) */
     public function toUnicode(): self
     {
         $uni = array_map(static function (Label $label): Label {
@@ -125,6 +143,7 @@ final class DomainName
         return (string) $this->toLDH() === (string) $other->toLDH();
     }
 
+    /** @return string Object hash of the LDH-normalised domain name */
     public function hashCode(): string
     {
         return spl_object_hash($this->toLDH());

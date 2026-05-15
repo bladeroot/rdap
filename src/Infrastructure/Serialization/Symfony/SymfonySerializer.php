@@ -12,8 +12,6 @@ declare(strict_types=1);
 
 namespace hiqdev\rdap\core\Infrastructure\Serialization\Symfony;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Exception;
 use hiqdev\rdap\core\Infrastructure\Serialization\SerializerInterface;
 use hiqdev\rdap\core\Infrastructure\Serialization\Symfony\Normalizer\AsStringNormalizer;
 use hiqdev\rdap\core\Infrastructure\Serialization\Symfony\Normalizer\DomainNormalizer;
@@ -23,12 +21,19 @@ use InvalidArgumentException;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
-use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
+use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
+/**
+ * Symfony Serializer adapter implementing SerializerInterface.
+ *
+ * Pre-configures the serializer with all normalizers needed for RDAP output:
+ * EnumNormalizer, VcardNormalizer, AsStringNormalizer, DomainNormalizer,
+ * DateTimeNormalizer (ISO 8601 UTC), and ObjectNormalizer with null-skipping.
+ */
 final class SymfonySerializer implements SerializerInterface
 {
     /**
@@ -36,13 +41,10 @@ final class SymfonySerializer implements SerializerInterface
      */
     private $serializer;
 
+    /** Builds the Symfony Serializer with all normalizers and the JSON encoder pre-configured */
     public function __construct()
     {
-        $classMetaDataFactory = new ClassMetadataFactory(
-            new AnnotationLoader(
-                new AnnotationReader()
-            )
-        );
+        $classMetaDataFactory = new ClassMetadataFactory(new AttributeLoader());
         $objectNormalizer = new ObjectNormalizer(
             $classMetaDataFactory,
             null,
@@ -75,6 +77,12 @@ final class SymfonySerializer implements SerializerInterface
         $this->serializer = $serializer;
     }
 
+    /**
+     * @param object $entity        RDAP entity to serialise
+     * @param string $targetFormat  Target format; use {@see SerializerInterface::FORMAT_JSON}
+     * @param array  $targetOptions Additional Symfony Serializer context options
+     * @return string Serialised representation (JSON by default)
+     */
     public function serialize(
         object $entity,
         string $targetFormat = self::FORMAT_JSON,
@@ -83,19 +91,21 @@ final class SymfonySerializer implements SerializerInterface
         return $this->serializer->serialize($entity, $targetFormat, $targetOptions);
     }
 
+    /**
+     * @param array|object $input        Data to deserialise (JSON string when using FORMAT_JSON)
+     * @param string|null  $type         Target class (required)
+     * @param string       $sourceFormat Source format
+     * @return mixed Deserialised object of the requested type
+     * @throws InvalidArgumentException When $type is null
+     */
     public function deserialize(
         $input,
         ?string $type = null,
         string $sourceFormat = self::FORMAT_JSON
-    ) {
-        throw new Exception('Deserialization is not implemented yet');
-        if ($type === null && is_object($input)) {
-            $type = get_class($input);
-        }
+    ): mixed {
         if ($type === null) {
-            throw new InvalidArgumentException('Type is was neither passed nor guessed.');
+            throw new InvalidArgumentException('Type must be provided for deserialization.');
         }
-
         return $this->serializer->deserialize($input, $type, $sourceFormat);
     }
 }

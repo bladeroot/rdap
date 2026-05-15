@@ -8,11 +8,18 @@ use hiqdev\rdap\core\Domain\ValueObject\DomainName;
 use hiqdev\rdap\core\Infrastructure\Query\DomainNamesQuery;
 use Iterator;
 
+/**
+ * Yields DomainName instances from the repository for a given query.
+ *
+ * Acts as a lazy iterator adapter over DomainNamesRepositoryInterface,
+ * converting raw name strings to typed DomainName value objects.
+ */
 final class DomainNamesProvider
 {
     /** @var DomainNamesRepositoryInterface */
     private $repository;
 
+    /** @param DomainNamesRepositoryInterface $repository Data source for retrieving domain name lists */
     public function __construct(DomainNamesRepositoryInterface $repository)
     {
         $this->repository = $repository;

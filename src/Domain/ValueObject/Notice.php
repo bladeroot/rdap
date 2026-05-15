@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace hiqdev\rdap\core\Domain\ValueObject;
 
+/** RDAP notice or remark value object (RFC 9083 §4.3), containing a title, optional type, description lines, and related links. */
 final class Notice
 {
     /**
@@ -65,6 +66,10 @@ final class Notice
         return $this->type ?? null;
     }
 
+    /**
+     * @param  string|null $type Optional notice type identifier
+     * @return self
+     */
     public function setType(?string $type): self
     {
         $this->type = $type;

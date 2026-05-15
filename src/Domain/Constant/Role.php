@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace hiqdev\rdap\core\Domain\Constant;
 
+/** RDAP entity role values as defined in RFC 9083 §10.2.4. */
 enum Role: string
 {
     case REGISTRANT     = 'registrant';
@@ -18,6 +19,10 @@ enum Role: string
     case NOTIFICATIONS  = 'notifications';
     case NOC            = 'noc';
 
+    /**
+     * @param  string $name Enum case name in UPPER_SNAKE_CASE (e.g. "REGISTRANT")
+     * @return self
+     */
     public static function fromName(string $name): self
     {
         return constant('self::' . $name);

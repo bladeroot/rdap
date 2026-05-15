@@ -12,12 +12,29 @@ use hiqdev\rdap\core\Domain\Entity\Nameserver;
 use hiqdev\rdap\core\Domain\ValueObject\DomainName;
 use hiqdev\rdap\core\Domain\ValueObject\Event;
 use hiqdev\rdap\core\Domain\ValueObject\Link;
-use hiqdev\rdap\core\Infrastructure\DTO\ContactData;
-use hiqdev\rdap\core\Infrastructure\DTO\DnsSecData;
-use hiqdev\rdap\core\Infrastructure\DTO\DomainData;
+use hiqdev\rdap\core\Infrastructure\DTO\ContactDataInterface;
+use hiqdev\rdap\core\Infrastructure\DTO\DnsSecDataInterface;
+use hiqdev\rdap\core\Infrastructure\DTO\DomainDataInterface;
 
+/**
+ * Assembles a fully populated RDAP Domain entity from raw DTO data.
+ *
+ * Wires together contacts (via ContactBuilderInterface), the registrar entity
+ * (via RegistrarBuilderInterface), DNSSEC data (via SecureDnsBuilderInterface),
+ * ICANN notices (via NoticeBuilderInterface), EPP statuses, nameservers, events,
+ * redacted fields, self link, and port43.
+ */
 final class DomainBuilder implements DomainBuilderInterface
 {
+    /**
+     * @param string                    $whoisUrl        Hostname of the WHOIS server (port43)
+     * @param array                     $rdapConformance rdapConformance strings to embed in every response
+     * @param string                    $rdapUrl         Base URL of this RDAP service (prefix for self links)
+     * @param ContactBuilderInterface   $contactBuilder  Builds vCard entities from contact DTOs
+     * @param RegistrarBuilderInterface $registrarBuilder Builds the registrar entity
+     * @param NoticeBuilderInterface    $noticeBuilder   Builds ICANN-required notice objects
+     * @param SecureDnsBuilderInterface $secureDnsBuilder Builds the secureDNS object from DS records
+     */
     public function __construct(
         private string $whoisUrl,
         private array $rdapConformance,
@@ -30,12 +47,12 @@ final class DomainBuilder implements DomainBuilderInterface
     }
 
     /**
-     * @param ContactData[] $contacts
-     * @param DnsSecData[]|null $secureDnsData
+     * @param ContactDataInterface[] $contacts
+     * @param DnsSecDataInterface[]|null $secureDnsData
      */
     public function build(
         DomainName $domainName,
-        DomainData $domainData,
+        DomainDataInterface $domainData,
         array $contacts,
         ?array $secureDnsData
     ): Domain {
